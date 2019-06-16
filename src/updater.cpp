@@ -105,7 +105,7 @@ void Updater::version_check_finished() {
     notify_on_ok = reply->property("notify_on_ok").isValid();
 
     if(reply->error() == QNetworkReply::NoError){
-        Version v_current(DT_VERSION_MAJOR, DT_VERSION_MINOR, DT_VERSION_PATCH);
+        Version v_current;
         Version v_latest(0,0,0);
         QString url;
         load_latest_version(reply,v_latest,url);

@@ -23,18 +23,6 @@ THE SOFTWARE.
 #ifndef DEFINES_H
 #define DEFINES_H
 
-#ifndef DT_VERSION_MAJOR
-    #define DT_VERSION_MAJOR 41
-#endif
-
-#ifndef DT_VERSION_MINOR
-    #define DT_VERSION_MINOR 0
-#endif
-
-#ifndef DT_VERSION_PATCH
-    #define DT_VERSION_PATCH 3
-#endif
-
 #define DEFAULT_CELL_SIZE 16
 #define DEFAULT_SPACER_WIDTH 4
 
