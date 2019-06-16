@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "mainwindow.h"
 #include "optionsmenu.h"
 #include "version.h"
+#include "defines.h"
 #include "customprofession.h"
 #include "superlabor.h"
 #include "dwarfmodel.h"

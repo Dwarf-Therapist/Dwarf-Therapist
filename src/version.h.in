@@ -24,21 +24,18 @@ THE SOFTWARE.
 #define VERSION_H
 
 #include <QString>
-#include "defines.h"
-#ifdef major
-#undef major
-#undef minor
-#endif
 
 struct Version {
     int major;
     int minor;
     int patch;
+    QString extra;
 
     Version()
-        : major(DT_VERSION_MAJOR)
-        , minor(DT_VERSION_MINOR)
-        , patch(DT_VERSION_PATCH)
+        : major(@DT_VERSION_MAJOR@)
+        , minor(@DT_VERSION_MINOR@)
+        , patch(@DT_VERSION_PATCH@)
+        , extra(@DT_VERSION_EXTRA@)
     {}
     Version(int major, int minor, int patch)
         : major(major)
@@ -46,7 +43,11 @@ struct Version {
         , patch(patch)
     {}
 
-    QString to_string() const {return QString("%1.%2.%3").arg(major).arg(minor).arg(patch);}
+    QString to_string() const {
+        return extra.isEmpty()
+            ? QString("%1.%2.%3").arg(major).arg(minor).arg(patch)
+            : QString("%1.%2.%3-%4").arg(major).arg(minor).arg(patch).arg(extra);
+    }
 
     bool operator==(const Version &other) const {
         return major == other.major && minor == other.minor && patch == other.patch;
