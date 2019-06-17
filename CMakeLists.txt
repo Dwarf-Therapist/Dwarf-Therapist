@@ -18,7 +18,6 @@ else()
     message(FATAL_ERROR "Failed to parse version string: ${DT_VERSION}")
 endif()
 configure_file(${CMAKE_SOURCE_DIR}/src/version.h.in ${CMAKE_BINARY_DIR}/src/version.h @ONLY)
-set_property(SOURCE ${CMAKE_BINARY_DIR}/src/version.h PROPERTY SKIP_AUTOGEN ON)
 configure_file(${CMAKE_SOURCE_DIR}/lnp/manifest.json.in ${CMAKE_BINARY_DIR}/lnp/manifest.json @ONLY)
 
 set(CMAKE_AUTOMOC ON)
@@ -47,6 +46,8 @@ elseif(UNIX)
         set(LIBS ${FOUNDATION_LIB} ${SECURITY_LIB} ${APPKIT_LIB})
 
         set(MACOSX_BUNDLE_GUI_IDENTIFIER "io.github.dwarf-therapist.DwarfTherapist")
+        set(MACOSX_BUNDLE_SHORT_VERSION_STRING "${DT_VERSION_MAJOR}.${DT_VERSION_MINOR}.${DT_VERSION_PATCH}")
+        set(MACOSX_BUNDLE_BUNDLE_VERSION "${DT_VERSION}")
     else() # Linux
         set(SOURCES ${SOURCES} src/dfinstancelinux.cpp)
         set(EXE_NAME "dwarftherapist")
