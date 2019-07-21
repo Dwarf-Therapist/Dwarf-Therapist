@@ -25,6 +25,14 @@ THE SOFTWARE.
 
 #include <QString>
 
+// glibc before 2.28 includes major and minor macros
+#ifdef major
+#undef major
+#endif
+#ifdef minor
+#undef minor
+#endif
+
 struct Version {
     int major;
     int minor;
