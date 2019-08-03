@@ -51,8 +51,8 @@ private:
     DFInstance * m_df;
     MemoryLayout * m_mem;
 
-    QString word_chunk(uint word, int language_id);
-    QString word_chunk_declined(uint word, short pos);
+    QString word_chunk(int word, int language_id);
+    QString word_chunk_declined(int word, short pos);
 
 };
 
