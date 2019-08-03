@@ -162,52 +162,51 @@ QString Languages::english_word(VIRTADDR addr)
     return out.trimmed();
 }
 
-QString Languages::word_chunk_declined(uint word, short pos) {
-    QString out = "";
-    if (word != 0xFFFFFFFF) {
-        switch(pos)
-        {
-            case 0:
-                out=m_language[word]->noun();
-                break;
-            case 1:
-                out=m_language[word]->plural_noun();
-                break;
-            case 2:
-                out=m_language[word]->adjective();
-                break;
-            case 3:
-                //out=m_language[word]->prefix();
-                break;
-            case 4:
-                out=m_language[word]->verb();
-                break;
-            case 5:
-                out=m_language[word]->present_simple_verb();
-                break;
-            case 6:
-                out=m_language[word]->past_simple_verb();
-                break;
-            case 7:
-                out=m_language[word]->past_participle_verb();
-                break;
-            case 8:
-                out=m_language[word]->present_participle_verb();
-                break;
-        }
+QString Languages::word_chunk_declined(int word, short pos) {
+    if (word == -1)
+        return "";
+    if (word < 0 || word >= m_language.count()) {
+        LOGE << "Invalid word index:" << word;
+        return "";
     }
-    return out;
+    switch(pos)
+    {
+        case 0:
+            return m_language[word]->noun();
+        case 1:
+            return m_language[word]->plural_noun();
+        case 2:
+            return m_language[word]->adjective();
+        //case 3:
+            //return m_language[word]->prefix();
+        case 4:
+            return m_language[word]->verb();
+        case 5:
+            return m_language[word]->present_simple_verb();
+        case 6:
+            return m_language[word]->past_simple_verb();
+        case 7:
+            return m_language[word]->past_participle_verb();
+        case 8:
+            return m_language[word]->present_participle_verb();
+        default:
+            return "";
+    }
 }
 
-QString Languages::word_chunk(uint word, int language_id)
+QString Languages::word_chunk(int word, int language_id)
 {
-    QString out = "";
+    if (word == -1 || m_words.isEmpty())
+        return "";
+
+    auto it = m_words.find(language_id);
     //if the language doesn't exist, use the last language (DF behaviour)
-    if (!m_words.contains(language_id))
-        language_id = m_words.count()-1;
+    if (it == m_words.end())
+        --it;
 
-    if (word != 0xFFFFFFFF)
-        out = m_words.value(language_id).at(word);
-
-    return out;
+    if (word < 0 || word >= it->count()) {
+        LOGE << "Invalid word index:" << word;
+        return "";
+    }
+    return it->at(word);
 }
