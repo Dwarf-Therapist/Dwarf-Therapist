@@ -84,6 +84,8 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
     QCommandLineParser parser;
     parser.addHelpOption();
     parser.addVersionOption();
+    QCommandLineOption log_option("log", tr("Set log file path."), tr("path"));
+    parser.addOption(log_option);
     QCommandLineOption debug_option("debug", tr("Set logging to debug level."));
     parser.addOption(debug_option);
     QCommandLineOption trace_option("trace", tr("Set logging to trace level."));
@@ -94,8 +96,6 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
     parser.addOption(devmode_option);
     parser.process(*this);
 
-    setup_logging(parser.isSet(debug_option), parser.isSet(trace_option));
-    load_translator();
     {
         auto mode = StandardPaths::DefaultMode;
         if (parser.isSet(devmode_option))
@@ -104,6 +104,12 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
             mode = StandardPaths::Mode::Portable;
         StandardPaths::init_paths(mode, parser.value(devmode_option));
     }
+
+    setup_logging(
+            parser.value(log_option),
+            parser.isSet(debug_option),
+            parser.isSet(trace_option));
+    load_translator();
 
     TRACE << "Creating settings object";
     m_user_settings = StandardPaths::settings();
@@ -160,7 +166,7 @@ DFInstance* DwarfTherapist::get_DFInstance(){
     return m_main_window->get_DFInstance();
 }
 
-void DwarfTherapist::setup_logging(bool debug_logging, bool trace_logging) {
+void DwarfTherapist::setup_logging(const QString &path, bool debug_logging, bool trace_logging) {
     LOG_LEVEL min_level = LL_INFO;
 
 #ifdef QT_DEBUG
@@ -175,13 +181,9 @@ void DwarfTherapist::setup_logging(bool debug_logging, bool trace_logging) {
 
     //setup logging
     m_log_mgr = new LogManager(this);
-    TruncatingFileLogger *log = m_log_mgr->add_logger(
-            #ifdef Q_OS_LINUX
-                ""
-            #else
-                "log/run.log"
-            #endif
-                );
+    TruncatingFileLogger *log = m_log_mgr->add_logger(!path.isEmpty()
+            ? path
+            : StandardPaths::log_location() + QDir::separator() + "dwarftherapist.log");
     if (log) {
         LogAppender *app = m_log_mgr->add_appender("core", log, LL_TRACE);
         if (app) {

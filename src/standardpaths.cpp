@@ -140,6 +140,30 @@ QString StandardPaths::writable_data_location()
     }
 }
 
+QString StandardPaths::log_location()
+{
+    switch (mode) {
+    case Mode::Portable:
+    case Mode::Developer:
+        return appdir.path();
+    case Mode::Standard:
+    default:
+#if (defined Q_OS_WIN)
+        return QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation)
+            + "\\log";
+#elif (defined Q_OS_OSX)
+        return QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+            + "/Library/Logs/"
+            + QCoreApplication::applicationName();
+#elif (defined Q_OS_LINUX)
+        return QStandardPaths::writableLocation(QStandardPaths::CacheLocation)
+            + "/log";
+#else
+#   error "Unsupported OS"
+#endif
+    }
+}
+
 QStringList StandardPaths::doc_locations()
 {
     switch (mode) {

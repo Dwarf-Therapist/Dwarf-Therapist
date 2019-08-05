@@ -154,7 +154,7 @@ private:
     static const QString m_url_homepage;
 
     void setup_search_paths();
-    void setup_logging(bool debug_logging, bool trace_logging);
+    void setup_logging(const QString &path, bool debug_logging, bool trace_logging);
     void load_translator();
     void edit_customization(QList<QVariant> data);
     void check_global_color(GLOBAL_COLOR_TYPES key, QString setting_key, QString title, QString desc, QColor col_default);
