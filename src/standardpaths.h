@@ -51,6 +51,7 @@ public:
     static QString locate_data(const QString &filename);
     static QStringList data_locations();
     static QString writable_data_location();
+    static QString log_location();
     static QStringList doc_locations();
 
 private:
