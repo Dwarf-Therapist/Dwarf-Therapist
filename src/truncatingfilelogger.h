@@ -28,6 +28,7 @@ http://www.opensource.org/licenses/mit-license.php
 #include "dwarftherapist.h"
 #include <QDebug>
 #include <QHash>
+#include <memory>
 
 class QFile;
 
@@ -75,27 +76,29 @@ private:
   it remains open. You can change the accepted log level to filter down how
   noisy the system is
   */
-class TruncatingFileLogger : public QObject {
-Q_OBJECT
+class TruncatingFileLogger {
 public:
-    explicit TruncatingFileLogger(const QString &path, QObject *parent = 0);
+    explicit TruncatingFileLogger(const QString &path);
+    TruncatingFileLogger(TruncatingFileLogger &&) = default;
     virtual ~TruncatingFileLogger();
     void write(const QString &message, const QString &file = QString(),
                int lineno = -1, const QString &function = QString());
 private:
     QString m_path; // absolute path to the current logfile
-    QFile *m_file; // the handle we use to log to
+    std::unique_ptr<QFile> m_file; // the handle we use to log to
 };
 
 class LogAppender : public QObject {
     Q_OBJECT
 public:
-    explicit LogAppender(const QString &module, TruncatingFileLogger *logger,
-                         LOG_LEVEL min_level, LogAppender *parent_appender = 0);
+    explicit LogAppender(const QString &module, LOG_LEVEL min_level,
+                         LogAppender *parent_appender = 0);
     virtual ~LogAppender(){
         m_parent_appender = 0;
-        m_logger = 0;
     }
+
+    void add_file_logger(const QString &path);
+    void add_stderr_logger();
 
     virtual QString module_name();
     LOG_LEVEL minimum_level() {return m_minimum_level;}
@@ -107,7 +110,7 @@ private:
     QString m_module_name;
     LOG_LEVEL m_minimum_level; // ignore any messages below this level
     LogAppender *m_parent_appender;
-    TruncatingFileLogger *m_logger;
+    std::vector<TruncatingFileLogger> m_loggers;
 };
 
 /*! class for managing the various active appenders and loggers and their
@@ -117,23 +120,17 @@ class LogManager : public QObject {
     Q_OBJECT
 public:
     explicit LogManager(QObject *parent = 0);
-    TruncatingFileLogger *add_logger(const QString &path);
-    TruncatingFileLogger *get_logger(const QString &path=QString());
     virtual ~LogManager(){
-        qDeleteAll(m_loggers);
-        m_loggers.clear();
         qDeleteAll(m_appenders);
         m_appenders.clear();
     }
 
     LogAppender *add_appender(const QString &module_name,
-                              TruncatingFileLogger *logger,
                               LOG_LEVEL min_level);
     LogAppender *get_appender(const QString &module_name);
 
     QString level_name(LOG_LEVEL lvl);
 private:
-    QHash<QString, TruncatingFileLogger*> m_loggers;
     QHash<QString, LogAppender*> m_appenders;
     QHash<LOG_LEVEL, QString> m_level_names;
 };

@@ -42,25 +42,11 @@ LogManager::LogManager(QObject *parent)
     m_level_names[LL_FATAL] = tr("FATAL");
 }
 
-TruncatingFileLogger *LogManager::add_logger(const QString &path) {
-    TruncatingFileLogger *ret_val = get_logger(path);
-    if (ret_val == NULL) {
-        ret_val = new TruncatingFileLogger(path, this);
-        m_loggers.insert(path, ret_val);
-    }
-    return ret_val;
-}
-
-TruncatingFileLogger *LogManager::get_logger(const QString &path) {
-    return m_loggers.value(path, NULL);
-}
-
 LogAppender *LogManager::add_appender(const QString &module_name,
-                                      TruncatingFileLogger *logger,
                                       LOG_LEVEL min_level) {
     LogAppender *ret_val = get_appender(module_name);
     if (ret_val == NULL) {
-        ret_val = new LogAppender(module_name, logger, min_level);
+        ret_val = new LogAppender(module_name, min_level);
         m_appenders.insert(module_name, ret_val);
     }
     return ret_val;
@@ -76,14 +62,23 @@ QString LogManager::level_name(LOG_LEVEL lvl) {
 }
 
 /**************** APPENDER **********************/
-LogAppender::LogAppender(const QString &module, TruncatingFileLogger *logger,
-                         LOG_LEVEL min_level, LogAppender *parent_appender)
+LogAppender::LogAppender(const QString &module, LOG_LEVEL min_level,
+                         LogAppender *parent_appender)
     : QObject(NULL)
     , m_module_name(module)
     , m_minimum_level(min_level)
     , m_parent_appender(parent_appender)
-    , m_logger(logger)
 {
+}
+
+void LogAppender::add_file_logger(const QString &path)
+{
+    m_loggers.emplace_back(path);
+}
+
+void LogAppender::add_stderr_logger()
+{
+    m_loggers.emplace_back("");
 }
 
 QString LogAppender::module_name() {
@@ -106,20 +101,18 @@ void LogAppender::write(const QString &message, LOG_LEVEL lvl,
             .arg(DT->get_log_manager()->level_name(lvl))
             .arg(module_name())
             .arg(message);
-    if (m_logger) {
-        m_logger->write(out, file, lineno, function);
-    }
+    for (auto &logger: m_loggers)
+        logger.write(out, file, lineno, function);
 }
 
 /**************** LOGGER **********************/
-TruncatingFileLogger::TruncatingFileLogger(const QString &path, QObject *parent)
-    : QObject(parent)
-    , m_path(path)
-    , m_file(0)
+TruncatingFileLogger::TruncatingFileLogger(const QString &path)
+    : m_path(path)
 {
     if (path.isEmpty()) {
-        m_file = new QFile(this);
-        m_file->open(stderr, QIODevice::WriteOnly | QIODevice::Text);
+        m_file = std::make_unique<QFile>();
+        if (!m_file->open(stderr, QIODevice::WriteOnly | QIODevice::Text))
+            throw std::runtime_error("Failed to open stderr");
     } else {
         QFileInfo info(m_path);
         info.makeAbsolute();
@@ -131,10 +124,11 @@ TruncatingFileLogger::TruncatingFileLogger(const QString &path, QObject *parent)
         m_path = info.absoluteFilePath();
 
         // open the path we were given...
-        m_file = new QFile(m_path);
+        m_file = std::make_unique<QFile>(m_path);
         if (!m_file->open(QIODevice::WriteOnly | QIODevice::Truncate |
                           QIODevice::Text)) {
             qCritical() << "Could not open " << m_path << " for writing!" << m_file->errorString();
+            throw std::runtime_error("Failed to open log file");
         }
     }
 }
@@ -145,8 +139,6 @@ TruncatingFileLogger::~TruncatingFileLogger() {
             m_file->flush();
             m_file->close();
         }
-        //m_file->deleteLater(); // the object not the file
-        delete m_file;
     }
 }
 
@@ -174,10 +166,6 @@ void TruncatingFileLogger::write(const QString &message,
         m_file->write(msg.toLatin1());
         m_file->flush();
     }
-
-#if !defined(Q_OS_LINUX) && defined(QT_DEBUG)
-    qDebug() << msg.toLatin1().trimmed();
-#endif
 }
 
 Streamer::Streamer(LogAppender *appender, LOG_LEVEL lvl, const QString &file,
