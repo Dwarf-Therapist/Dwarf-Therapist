@@ -88,7 +88,7 @@ GameDataReader::GameDataReader(QObject *parent)
     m_data_settings->endArray();
     qDeleteAll(m_ordered_labors);
     m_ordered_labors.clear();
-    qSort(labor_names);
+    std::sort(labor_names.begin(), labor_names.end());
     foreach(QString name, labor_names) {
         bool found = false;
         foreach(Labor *l, m_labors) {
@@ -126,7 +126,7 @@ GameDataReader::GameDataReader(QObject *parent)
     }
     m_data_settings->endArray();
 
-    qSort(attribute_names);
+    std::sort(attribute_names.begin(), attribute_names.end());
     foreach(QString sorted_name, attribute_names) {
         foreach(ATTRIBUTES_TYPE id, m_attribute_names.uniqueKeys()) {
             if (m_attribute_names.value(id) == sorted_name) {
@@ -191,7 +191,7 @@ GameDataReader::GameDataReader(QObject *parent)
     }
     m_data_settings->endArray();
 
-    qSort(goal_names);
+    std::sort(goal_names.begin(), goal_names.end());
     foreach(QString name, goal_names) {
         foreach(int goal_id, m_goals.uniqueKeys()) {
             if (m_goals.value(goal_id).first == name) {
@@ -212,7 +212,7 @@ GameDataReader::GameDataReader(QObject *parent)
         belief_names << b->name;
     }
     m_data_settings->endArray();
-    qSort(belief_names);
+    std::sort(belief_names.begin(), belief_names.end());
     foreach(QString name, belief_names) {
         foreach(Belief *b, m_beliefs) {
             if (b->name == name) {
@@ -232,7 +232,7 @@ GameDataReader::GameDataReader(QObject *parent)
     read_activity_section("unit_activities",DwarfJob::ACTIVITY_OFFSET,&job_names);
     read_activity_section("unit_orders",DwarfJob::ORDER_OFFSET,&job_names);
 
-    qSort(job_names);
+    std::sort(job_names.begin(), job_names.end());
     foreach(QString name, job_names) {
         foreach(DwarfJob *j, m_dwarf_jobs) {
             if (j->name() == name) {
@@ -355,7 +355,7 @@ GameDataReader::GameDataReader(QObject *parent)
     foreach(QString id, m_data_settings->childKeys()) {
         m_spheres << m_data_settings->value(id, "UNKNOWN").toString();
     }
-    qSort(m_spheres);
+    std::sort(m_spheres.begin(), m_spheres.end());
     m_data_settings->endGroup();
 
     count = m_data_settings->beginReadArray("knowledge");
@@ -631,7 +631,7 @@ void GameDataReader::refresh_facets(){
     }
     m_data_settings->endArray();
 
-    qSort(trait_names);
+    std::sort(trait_names.begin(), trait_names.end());
     foreach(QString name, trait_names) {
         foreach(Trait *t, m_traits) {
             if (t->get_name() == name) {
@@ -648,7 +648,7 @@ void GameDataReader::refresh_opt_plans(){
     foreach(laborOptimizerPlan *l, m_opt_plans) {
         opt_names << l->name.toUpper();
     }
-    qSort(opt_names);
+    std::sort(opt_names.begin(), opt_names.end());
     foreach(QString name, opt_names) {
         foreach(laborOptimizerPlan *l, m_opt_plans) {
             if (l->name.toUpper() == name.toUpper()) {
@@ -666,7 +666,7 @@ void GameDataReader::load_role_mappings(){
     foreach(Role *r, m_dwarf_roles) {
         role_names << r->name().toUpper();
     }
-    qSort(role_names);
+    std::sort(role_names.begin(), role_names.end());
     foreach(QString name, role_names) {
         foreach(Role *r, m_dwarf_roles) {
             if (r->name().toUpper() == name.toUpper()) {

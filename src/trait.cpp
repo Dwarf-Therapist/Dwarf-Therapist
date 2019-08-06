@@ -90,7 +90,7 @@ Trait::Trait(int trait_id, QSettings &s, QObject *parent)
         m_level_string[76] = s.value("level_4", "").toString();
         m_level_string[91] = s.value("level_5", "").toString();
     }else{
-        qSort(m_limits);
+        std::sort(m_limits.begin(), m_limits.end());
         for(int i = 0; i < m_limits.length(); i++){
             m_level_string[m_limits.at(i)] = s.value(QString("level_%1").arg(QString::number(i))).toString();
         }

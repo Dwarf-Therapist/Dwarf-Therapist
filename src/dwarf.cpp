@@ -2856,7 +2856,7 @@ QString Dwarf::tooltip_text() {
                 }
             }
 
-            qSort(status_wound_summary);
+            std::sort(status_wound_summary.begin(), status_wound_summary.end());
             health_info.append(tr("<h4 style=\"margin:0;\"><b>%1:</b></h4><ul style=\"margin:0;\">%2</ul>").arg(tr("Health Issues")).arg(status_wound_summary.join(", ")));
         }
 
@@ -3185,9 +3185,9 @@ void Dwarf::refresh_role_display_ratings(){
         m_sorted_role_ratings.append(sr);
     }
     if(DT->user_settings()->value("options/show_custom_roles",false).toBool()){
-        qSort(m_sorted_role_ratings.begin(),m_sorted_role_ratings.end(),&Dwarf::sort_ratings_custom);
+        std::sort(m_sorted_role_ratings.begin(),m_sorted_role_ratings.end(),&Dwarf::sort_ratings_custom);
     }else{
-        qSort(m_sorted_role_ratings.begin(),m_sorted_role_ratings.end(),&Dwarf::sort_ratings);
+        std::sort(m_sorted_role_ratings.begin(),m_sorted_role_ratings.end(),&Dwarf::sort_ratings);
     }
 }
 

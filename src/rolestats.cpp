@@ -45,7 +45,7 @@ void RoleStats::set_list(const QVector<double> &unsorted){
 
 void RoleStats::set_mode(const QVector<double> &unsorted){
     m_valid = unsorted;
-    qSort(m_valid);
+    std::sort(m_valid.begin(), m_valid.end());
     bool skewed = false;
     double valid_size = m_valid.size();
     m_median = RoleCalcBase::find_median(m_valid);

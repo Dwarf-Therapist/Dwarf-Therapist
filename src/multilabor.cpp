@@ -87,7 +87,7 @@ void MultiLabor::load_labors(QListWidget *labor_list){
     m_selected_count = 0;
     read_settings();
     QList<Labor*> labors = gdr->get_ordered_labors();
-    qSort(labors.begin(),labors.end(),Labor::skilled_compare);
+    std::sort(labors.begin(),labors.end(),Labor::skilled_compare);
     foreach(Labor *l, labors) {
         QListWidgetItem *item = new QListWidgetItem(l->name, labor_list);
         item->setData(Qt::UserRole, l->labor_id);
