@@ -144,7 +144,7 @@ bool ImportExportDialog::setup_for_profession_import() {
 
         // watch out for conflicts!
         if (DT->get_custom_profession(cp->get_name())) {
-            i->setTextColor(Qt::red);
+            i->setForeground(Qt::red);
             i->setData(Qt::UserRole+1, true); // conflicting flag
             i->setText(i->text() + " CONFLICT");
             i->setCheckState(Qt::Unchecked);
@@ -237,7 +237,7 @@ bool ImportExportDialog::setup_for_gridview_import() {
 
         // watch out for conflicts!
         if (view_mgr->get_view(gv->name())) {
-            i->setTextColor(Qt::red);
+            i->setForeground(Qt::red);
             i->setData(Qt::UserRole+1, true); // conflicting flag
             i->setText(i->text() + " CONFLICT");
             i->setCheckState(Qt::Unchecked);
@@ -329,7 +329,7 @@ bool ImportExportDialog::setup_for_role_import() {
         // watch out for conflicts!
         Role *rCheck = GameDataReader::ptr()->get_role(r->name());
         if(rCheck && rCheck->is_custom()){
-            i->setTextColor(Qt::red);
+            i->setForeground(Qt::red);
             i->setData(Qt::UserRole+1, true); // conflicting flag
             i->setText(tr("%1 (%2!)").arg(i->text()).arg(tr("CONFLICT")));
             i->setCheckState(Qt::Unchecked);
