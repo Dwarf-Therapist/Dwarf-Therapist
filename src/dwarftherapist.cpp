@@ -198,21 +198,16 @@ void DwarfTherapist::setup_logging(const QString &path, bool debug_logging, bool
     else
         log_file = path;
 
-    TruncatingFileLogger *log = m_log_mgr->add_logger(log_file);
-    if (log) {
-        LogAppender *app = m_log_mgr->add_appender("core", log, LL_TRACE);
-        if (app) {
-            Version v; // current version
-            LOGI << "Dwarf Therapist" << v.to_string() << "starting normally.";
-            LOGI << "Runtime QT Version" << qVersion();
-            //app->set_minimum_level(min_level);
-            app->set_minimum_level(min_level);
-        } else {
-            qCritical() << "Could not open logfile!";
-            qApp->exit(1);
-        }
-    } else {
-        qCritical() << "Could not open logfile!";
+    LogAppender *app = m_log_mgr->add_appender("core", LL_TRACE);
+    try {
+        app->add_file_logger(log_file);
+        app->add_stderr_logger();
+        Version v; // current version
+        LOGI << "Dwarf Therapist" << v.to_string() << "starting normally.";
+        LOGI << "Runtime QT Version" << qVersion();
+        app->set_minimum_level(min_level);
+    } catch (std::exception &e) {
+        qCritical() << e.what();
         qApp->exit(1);
     }
 }
