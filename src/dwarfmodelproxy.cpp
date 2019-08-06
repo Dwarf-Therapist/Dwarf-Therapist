@@ -261,7 +261,7 @@ QList<Dwarf*> DwarfModelProxy::get_filtered_dwarves(){
             if(mapFromSource(m->index(i,0)).isValid()){
                 if (m->data(m->index(i, 0), DwarfModel::DR_IS_AGGREGATE).toBool()) {
                     for(int j = 0; j < m->item(i,0)->rowCount(); j++){
-                        if(mapFromSource(m->index(i,0).child(j,0)).isValid()){
+                        if(mapFromSource(m->index(j,0,m->index(i,0))).isValid()){
                             dwarfs.append(m->get_dwarf_by_id(m->item(i,0)->child(j,0)->data(DwarfModel::DR_ID).toInt()));
                         }
                     }
