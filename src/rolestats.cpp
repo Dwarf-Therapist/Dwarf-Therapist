@@ -56,7 +56,7 @@ void RoleStats::set_mode(const QVector<double> &unsorted){
 
         QVector<double>::iterator valid_start = m_valid.begin();
         if(m_valid.first() <= m_invalid){
-            valid_start = qUpperBound(m_valid.begin(),m_valid.end(),m_valid.first());
+            valid_start = std::upper_bound(m_valid.begin(),m_valid.end(),m_valid.first());
             m_valid.erase(m_valid.begin(),valid_start);
         }
 
