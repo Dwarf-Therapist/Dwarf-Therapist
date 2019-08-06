@@ -181,9 +181,24 @@ void DwarfTherapist::setup_logging(const QString &path, bool debug_logging, bool
 
     //setup logging
     m_log_mgr = new LogManager(this);
-    TruncatingFileLogger *log = m_log_mgr->add_logger(!path.isEmpty()
-            ? path
-            : StandardPaths::log_location() + QDir::separator() + "dwarftherapist.log");
+    QString log_file;
+    if (path.isEmpty()) {
+        // Use rotating log files in standard directory
+        QDir log_dir = StandardPaths::log_location();
+        static const QString current_log = "dwarftherapist.log";
+        static const QString rotated_log = "dwarftherapist.log.%1";
+        int log_count = StandardPaths::settings()->value("options/log_count", 4).toInt();
+        log_dir.remove(rotated_log.arg(log_count));
+        for (int i = log_count-1; i > 0; --i) {
+            log_dir.rename(rotated_log.arg(i), rotated_log.arg(i+1));
+        }
+        log_dir.rename(current_log, rotated_log.arg(1));
+        log_file = log_dir.filePath(current_log);
+    }
+    else
+        log_file = path;
+
+    TruncatingFileLogger *log = m_log_mgr->add_logger(log_file);
     if (log) {
         LogAppender *app = m_log_mgr->add_appender("core", log, LL_TRACE);
         if (app) {
