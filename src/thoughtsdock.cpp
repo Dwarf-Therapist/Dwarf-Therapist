@@ -198,7 +198,7 @@ void ThoughtsItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &
 }
 
 QString ThoughtsItemDelegate::appendText(QPainter *painter, const QStyleOptionViewItem &option, QColor text_color, QString curr_text, QString text) const {
-    int text_width = painter->fontMetrics().width(curr_text);
+    int text_width = painter->fontMetrics().horizontalAdvance(curr_text);
     QRect r_display = option.rect.adjusted(text_width,0,0,0);
     painter->setPen(text_color);
     painter->drawText(r_display,Qt::AlignLeft | Qt::AlignVCenter,text);
@@ -206,7 +206,7 @@ QString ThoughtsItemDelegate::appendText(QPainter *painter, const QStyleOptionVi
 }
 
 QString ThoughtsItemDelegate::prependText(QPainter *painter, const QStyleOptionViewItem &option, QColor text_color, QString curr_text, QString text) const {
-    int text_width = -painter->fontMetrics().width(curr_text);
+    int text_width = -painter->fontMetrics().horizontalAdvance(curr_text);
     QRect r_display = option.rect.adjusted(0,0,text_width,0);
     painter->setPen(text_color);
     painter->drawText(r_display,Qt::AlignRight | Qt::AlignVCenter,text);

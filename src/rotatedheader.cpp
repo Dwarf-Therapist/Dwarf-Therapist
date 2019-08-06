@@ -164,7 +164,7 @@ void RotatedHeader::resizeSection(int logicalIndex, int size) {
 
 void RotatedHeader::set_header_height(QString max_title){
     QFontMetrics fm(m_font);
-    m_preferred_height = fm.width(max_title)+15;
+    m_preferred_height = fm.horizontalAdvance(max_title)+15;
     if(m_preferred_height <= 0)
         m_preferred_height = 150;
 }
