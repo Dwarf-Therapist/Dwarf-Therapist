@@ -121,6 +121,7 @@ public slots:
     void go_to_latest_release();
     void check_latest_version();
     void open_data_dir();
+    void open_log_dir();
 
     //help
     void open_help();

@@ -944,6 +944,11 @@ void MainWindow::open_data_dir() {
     QDesktopServices::openUrl(QUrl::fromLocalFile(data_dir.path()));
 }
 
+void MainWindow::open_log_dir() {
+    QDir log_dir = StandardPaths::log_location();
+    QDesktopServices::openUrl(QUrl::fromLocalFile(log_dir.path()));
+}
+
 void MainWindow::open_help(){
     QUrl url("http://dffd.wimbli.com/file.php?id=7889");
     foreach (const QString &dir, StandardPaths::doc_locations()) {
