@@ -1,3 +1,17 @@
+### Version 41.1.0 Patch Notes
+
+***
+ - added needs for roles
+ - added macOS bundle versions
+ - changed log files location
+ - added log location shortcut in "file" menu
+ - added log rotation for keeping a few log from previous sessions
+ - fixed role calculations
+ - fixed role goals ratings
+ - fixed a crash in the role editor
+ - fixed log files being created as root on macOS
+ - fixed about dialog colors (for dark styles) and geometry
+
 ### Version 41.0.3 Patch Notes
 
 ***
