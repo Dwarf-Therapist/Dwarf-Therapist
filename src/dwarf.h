@@ -503,7 +503,7 @@ public:
     Q_INVOKABLE QString caste_name(bool plural_name = false);
     Q_INVOKABLE QString caste_tag();
     Q_INVOKABLE QString caste_desc();
-    QString race_name(bool base = false, bool plural_name = false);
+    Q_INVOKABLE QString race_name(bool base = true, bool plural_name = false);
 
     //! used for building a datamodel that shows all pending changes this dwarf has queued up
     QTreeWidgetItem *get_pending_changes_tree();
