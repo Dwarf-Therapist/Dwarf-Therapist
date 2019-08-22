@@ -125,10 +125,11 @@ static const char *general_doc = R"***(
 <p class="method"><span class="type">int</span> <span class="identifier">get_birth_year)</span>()</p>
 <p class="method"><span class="type">bool</span> <span class="identifier">born_in_fortress</span>()</p>
 <p class="method"><span class="type">short</span> <span class="identifier">get_caste_id</span>()</p>
-<p class="method"><span class="type">string</span> <span class="identifier">get_caste_tag</span>()</p>
-<p class="method"><span class="type">string</span> <span class="identifier">get_caste_name</span>()</p>
-<p class="method"><span class="type">string</span> <span class="identifier">get_caste_desc</span>()</p>
+<p class="method"><span class="type">string</span> <span class="identifier">caste_tag</span>()</p>
+<p class="method"><span class="type">string</span> <span class="identifier">caste_name</span>()</p>
+<p class="method"><span class="type">string</span> <span class="identifier">caste_desc</span>()</p>
 <p class="method"><span class="type">short</span> <span class="identifier">get_race_id</span>()</p>
+<p class="method"><span class="type">string</span> <span class="identifier">race_name</span>()</p>
 <p class="method"><span class="type">bool</span> <span class="identifier">has_preference</span>(<span class="type">string</span> <span class="arg">pref_name</span>, <span class="type">string</span> <span class="arg">pref_category</span>)
     <span class="comment">**leave pref_category blank to search in all categories. eg. has_preference("copper","")</span></p>
 <p class="method"><span class="type">bool</span> <span class="identifier">has_thought</span>(<span class="type">short</span> <span class="arg">id</span>)</p>

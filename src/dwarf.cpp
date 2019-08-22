@@ -311,7 +311,7 @@ void Dwarf::read_data() {
 
     if(m_is_valid){
         LOGI << QString("FOUND %1 (%2) name:%3 id:%4 histfig_id:%5")
-                .arg(race_name(true)).arg(hexify(m_address))
+                .arg(race_name()).arg(hexify(m_address))
                 .arg(m_nice_name).arg(m_id).arg(m_histfig_id);
     }
 }
@@ -380,7 +380,7 @@ bool Dwarf::validate(){
 void Dwarf::set_validation(QString reason, bool *valid_var, bool valid, LOG_LEVEL l){
     QString msg = QString("%1 %2 name:%3 id:%4 reason:%5")
             .arg(valid ? tr("FOUND") : tr("IGNORING"))
-            .arg(race_name()).arg(m_nice_name).arg(m_id).arg(reason);
+            .arg(race_name(false)).arg(m_nice_name).arg(m_id).arg(reason);
 
     if(l == LL_DEBUG){
         LOGD << msg;
@@ -765,7 +765,7 @@ void Dwarf::build_names() {
     if(is_adult()){
         creature_name = caste_name();
     }else{
-        creature_name = race_name();
+        creature_name = race_name(false);
     }
     if(m_is_animal){
         if(is_adult()){
