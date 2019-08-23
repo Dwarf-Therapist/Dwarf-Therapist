@@ -16,6 +16,8 @@ struct RoleModel::AspectInfo
     Role::weight_info Role::* global_weight;
     float default_global_weight;
 
+    virtual ~AspectInfo() = default;
+
     virtual QString get_name(const Role *, int) const = 0;
     virtual QString get_tip(const Role *, int) const = 0;
     virtual Role::aspect_weight &get_weight(Role *, int) const = 0;
@@ -31,6 +33,8 @@ struct RoleModel::AspectVectorInfo: RoleModel::AspectInfo
 
     std::function<QString (const T &)> get_name_fn;
     std::function<QString (const T &)> get_tip_fn;
+
+    ~AspectVectorInfo() override = default;
 
     Role::aspect_weight &get_weight(Role *r, int index) const override
     {
