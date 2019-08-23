@@ -176,12 +176,12 @@ void Updater::check_layouts(DFInstance *df) {
 
 bool Updater::load_manifest(QNetworkReply *reply, QVariant &manifest_object){
 
-    QJsonParseError *json_err = new QJsonParseError();
-    QJsonDocument doc = QJsonDocument::fromJson(reply->readAll(),json_err);
-    if(json_err && json_err->error != QJsonParseError::NoError){
-        LOGW << json_err->errorString();
+    QJsonParseError json_err;
+    QJsonDocument doc = QJsonDocument::fromJson(reply->readAll(), &json_err);
+    if(json_err.error != QJsonParseError::NoError){
+        LOGW << json_err.errorString();
         //emit a reply error to be handled by update_error
-        reply->setProperty("ERROR",json_err->errorString());
+        reply->setProperty("ERROR",json_err.errorString());
         reply->error(QNetworkReply::UnknownContentError);
         return false;
     }else{
