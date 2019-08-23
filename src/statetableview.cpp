@@ -886,21 +886,21 @@ void StateTableView::sort_named_column(int column, DwarfModelProxy::DWARF_SORT_R
 }
 
 void StateTableView::column_right_clicked(int idx){
-    QMenu *m = new QMenu(this);
+    QMenu m;
 
     ViewColumn *col = m_model->current_grid_view()->get_column(idx);
     if(col && col->get_sortable_types().count() > 0){
         QString title = "Sort " + get_column_type(col->type()).toLower().replace("_"," ") + " columns by..";
-        m->setWindowTitle(title);
+        m.setWindowTitle(title);
 
-        QAction *a = m->addAction(title);
+        QAction *a = m.addAction(title);
         //initialize our little data struct we'll pass when a sort type is chosen
         QList<QVariant> data;
         data << idx << col->type() << ViewColumn::CST_LEVEL;
         QIcon current(":img/ui-button-navigation.png");
         foreach(ViewColumn::COLUMN_SORT_TYPE sType, col->get_sortable_types()){
             data.replace(2, sType);
-            a = m->addAction(capitalizeEach(ViewColumn::get_sort_type(sType).toLower().replace("_"," ")), this, SLOT(change_column_sort_method()));
+            a = m.addAction(capitalizeEach(ViewColumn::get_sort_type(sType).toLower().replace("_"," ")), this, SLOT(change_column_sort_method()));
             a->setData(QVariant(data));
             if(sType == col->get_current_sort())
                 a->setIcon(current);
@@ -909,23 +909,23 @@ void StateTableView::column_right_clicked(int idx){
         //args: labor_id, enable, skilled_only
         if(col->type() == CT_LABOR){
             int labor_id = static_cast<LaborColumn*>(col)->labor_id();
-            m->addSeparator();
-            a = m->addAction(QIcon(":img/plus-circle.png"),tr("Assign %1 to everyone.").arg(col->title()),this, SLOT(toggle_column_labors()));
+            m.addSeparator();
+            a = m.addAction(QIcon(":img/plus-circle.png"),tr("Assign %1 to everyone.").arg(col->title()),this, SLOT(toggle_column_labors()));
             data.clear();
             data << labor_id << true << false;
             a->setData(QVariant(data));
 
-            a = m->addAction(QIcon(":img/plus-white.png"),tr("Assign %1 to skilled workers only.").arg(col->title()),this, SLOT(toggle_column_labors()));
+            a = m.addAction(QIcon(":img/plus-white.png"),tr("Assign %1 to skilled workers only.").arg(col->title()),this, SLOT(toggle_column_labors()));
             data.replace(2,true); //skilled only
             a->setData(QVariant(data));
 
-            a = m->addAction(QIcon(":img/minus-circle.png"),tr("Unassign %1 from everyone.").arg(col->title()),this, SLOT(toggle_column_labors()));
+            a = m.addAction(QIcon(":img/minus-circle.png"),tr("Unassign %1 from everyone.").arg(col->title()),this, SLOT(toggle_column_labors()));
             data.replace(1,false); //disable
             data.replace(2, false); //ignore skill
             a->setData(QVariant(data));
         }
 
-        m->exec(this->mapFrom(this,QCursor::pos()));
+        m.exec(this->mapFrom(this,QCursor::pos()));
     }
 }
 

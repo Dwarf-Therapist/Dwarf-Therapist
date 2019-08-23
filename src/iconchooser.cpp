@@ -61,9 +61,9 @@ IconChooser::~IconChooser()
 
 void IconChooser::showImage(int num)
 {
-    QStandardItem* imageitem = new QStandardItem();
     QString icn_path = ":/profession/prof_" + QString::number(num) + ".png";
     if(QFile::exists(icn_path)){
+        QStandardItem* imageitem = new QStandardItem();
         imageitem->setIcon(QIcon(icn_path));
         imageitem->setData(num,Qt::UserRole);
         imageitem->setData(icn_path,Qt::UserRole+1);
