@@ -22,6 +22,7 @@ THE SOFTWARE.
 */
 
 #include "weaponcolumn.h"
+#include "caste.h"
 #include "columntypes.h"
 #include "dwarfmodel.h"
 #include "dwarf.h"
@@ -81,10 +82,6 @@ QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
         item->setToolTip("Weapon not found.");
         return item;
     }
-    if(d->body_size() < 0){
-        item->setToolTip(tr("Missing body_size offset!"));
-        return item;
-    }
 
     QString wep = m_weapon->name_plural().toLower();
     if(wep.indexOf(",")>0)
@@ -99,27 +96,24 @@ QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
     //if can wield, then the individual's size determines 1h/2h
 
     //use the default size, as DF doesn't take into account a creature's actual size when checking if they can use weapons
-    int caste_size = d->body_size(true);
-    bool onehand = false;
-    bool twohand = false;
-    QString desc = tr("<b>Can only wield</b> %1 with <u>2 hands</u>.").arg(wep);
-    if(caste_size > m_weapon->single_grasp())
-        onehand = true;
-    if(caste_size > m_weapon->multi_grasp())
-        twohand = true;
-
-    //setup drawing ratings
-    if(!onehand && !twohand){
+    // Bug 0005812: Bigger than average dwarves refuse to equip big weapons (http://www.bay12games.com/dwarves/mantisbt/view.php?id=0005812)
+    QString desc;
+    bool twohand = d->get_caste()->adult_size() >= m_weapon->multi_grasp();
+    bool onehand = d->body_size_base() > m_weapon->single_grasp();
+    if (!twohand) {
         desc = tr("<b>Cannot wield</b> %1.").arg(wep);
         rating = 15; //this will give us a medium-large red square as the further from the median the larger the square gets
         numeric_rating = "X";
         sort_val = 0;
     }
-    else if (twohand && onehand){
+    else if (onehand) {
         desc = tr("<b>Can wield</b> %1 with one or two hands.").arg(wep);
         rating = 50; //49-51 are not drawn, so any value in there to draw nothing
         numeric_rating = "";
         sort_val = 2;
+    }
+    else {
+        desc = tr("<b>Can only wield</b> %1 with <u>2 hands</u>.").arg(wep);
     }
 
     QStringList weapon_skills;
@@ -170,7 +164,7 @@ QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
             .arg(single_text.append("<br/>"))
             .arg(multi_text)
             .arg(d->nice_name())
-            .arg(tr("%1%2").arg(d->body_size() * 10).arg(units)); //however in the tooltip, show the actual size
+            .arg(tr("%1%2").arg(d->body_size_base() * 10).arg(units)); //however in the tooltip, show the actual size
 
     item->setToolTip(tooltip);
 

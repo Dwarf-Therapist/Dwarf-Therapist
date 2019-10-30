@@ -498,6 +498,7 @@ public:
     static QString happiness_name(DWARF_HAPPINESS happiness);
 
     Caste *get_caste() {return m_caste;}
+    const Caste *get_caste() const {return m_caste;}
 
     //! method for mapping a caste id to a meaningful text name string
     Q_INVOKABLE QString caste_name(bool plural_name = false);
@@ -539,7 +540,8 @@ public:
     QPixmap profession_icon() {return m_icn_prof;}
     QString gender_icon_path() {return m_icn_gender;}
 
-    Q_INVOKABLE int body_size(bool use_default = false) const;
+    Q_INVOKABLE int body_size() const {return m_body_size;}
+    Q_INVOKABLE int body_size_base() const {return m_body_size_base;}
 
     bool has_state(short id){return m_states.contains(id);}
     int state_value(short id){return m_states.value(id,-1);}
@@ -650,6 +652,7 @@ private:
     int m_total_xp;
     int m_migration_wave;
     int m_body_size;
+    int m_body_size_base;
     TRAINED_LEVEL m_animal_type;
 
     Q_PROPERTY(QString first_name READ first_name) // no setters (read-only)
