@@ -72,7 +72,7 @@ public:
     BodyPart *get_body_part(int body_part_id);
 
     bool is_geldable();
-    int adult_size(){return m_adult_size;}
+    int adult_size() const {return m_adult_size;}
 
 private:
     VIRTADDR m_address;

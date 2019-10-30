@@ -116,6 +116,7 @@ static const char *general_doc = R"***(
     <span class="comment">**returns a comma separated list of the unit's noble positions</span></p>
 <p class="method"><span class="type">int</span> <span class="identifier">get_raw_happiness</span>()</p>
 <p class="method"><span class="type">int</span> <span class="identifier">body_size</span>()</p>
+<p class="method"><span class="type">int</span> <span class="identifier">body_size_base</span>()</p>
 <p class="method"><span class="type">int</span> <span class="identifier">migration_wave</span>()</p>
 <p class="method"><span class="type">bool</span> <span class="identifier">is_cursed</span>()</p>
 <p class="method"><span class="type">string</span> <span class="identifier">curse_name</span>()

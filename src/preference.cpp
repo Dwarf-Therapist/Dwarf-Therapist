@@ -141,7 +141,8 @@ ItemPreference::ItemPreference(const ItemSubtype *item)
 bool ItemPreference::can_wield(const Dwarf *d) const {
     //if it's a weapon, ensure the dwarf can actually wield
     if (auto w = dynamic_cast<const ItemWeaponSubtype *>(m_item_subtype)) {
-        return d->body_size(true) >= w->multi_grasp();
+        // use caste size because of DF bug 0005812
+        return d->get_caste()->adult_size() >= w->multi_grasp();
     }
     return true;
 }

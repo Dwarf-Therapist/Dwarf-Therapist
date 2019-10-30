@@ -594,28 +594,8 @@ void Dwarf::read_mood(){
 }
 
 void Dwarf::read_body_size(){
-    //actual size of the creature
-    int offset = m_mem->dwarf_offset("size_info");
-    if(offset){
-        m_body_size = m_df->read_int(m_address + offset);
-    }else{
-        LOGW << "Missing size_info offset!";
-        m_body_size = body_size(true);
-    }
-}
-
-int Dwarf::body_size(bool use_default) const {
-    //we include returning the default size because for the weapon columns, the size actually doesn't matter to DF (bug?)
-    if(use_default){
-        int def_size = 6000; //default adult size for a dwarf
-        if(m_is_baby)
-            def_size = 300;
-        else if(m_is_child)
-            def_size = 1500;
-        return def_size;
-    }else{
-        return m_body_size;
-    }
+    m_body_size = m_df->read_int(m_mem->dwarf_field(m_address, "size_info"));
+    m_body_size_base = m_df->read_int(m_mem->dwarf_field(m_address, "size_base"));
 }
 
 void Dwarf::read_animal_type(){
