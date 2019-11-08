@@ -1,3 +1,12 @@
+### Version 41.1.1 Patch Notes
+
+***
+ - added papermaker and bookbinder roles
+ - made race_name invokable from scripts
+ - fixed weapon columns
+ - fixed a crash when quitting on macOS.
+ - fixed a crash when reading invalid language data from DF
+
 ### Version 41.1.0 Patch Notes
 
 ***
