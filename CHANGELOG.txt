@@ -1,3 +1,9 @@
+### Version 41.1.2 Patch Notes
+
+***
+ - re-added missing noble section roles grid view
+ - add experimental style choice in the option dialog
+
 ### Version 41.1.1 Patch Notes
 
 ***
