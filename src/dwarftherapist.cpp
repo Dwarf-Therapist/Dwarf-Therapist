@@ -50,10 +50,6 @@ THE SOFTWARE.
 #include <QTimer>
 #include <QCommandLineParser>
 
-#ifdef Q_OS_OSX
-#include <unistd.h>
-#endif
-
 const QString DwarfTherapist::m_url_homepage = QString("https://github.com/%1/%2").arg(REPO_OWNER).arg(REPO_NAME);
 
 DwarfTherapist::DwarfTherapist(int &argc, char **argv)
@@ -71,11 +67,6 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
     , m_arena_mode(false) //manually set this to true to do arena testing (very hackish, all units will be animals)
     , m_log_mgr(0)
 {
-#ifdef Q_OS_OSX
-    // Drop root privileges early, they will be reacquired when needed
-    seteuid(getuid());
-#endif
-
 #ifdef Q_OS_LINUX
     // Linux prefers lower case and no space in package names.
     setApplicationName("dwarftherapist");
