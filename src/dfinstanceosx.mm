@@ -63,10 +63,6 @@ DFInstanceOSX::DFInstanceOSX(QObject* parent)
     , m_alloc_end(0)
     , m_ruid(getuid())
 {
-    // Try to reacquire root privileges, don't check success,
-    // authorize() will handle that
-    seteuid(0);
-
     // This makes the unauthorized DT instance quit at the proper time.
     // No, fflush(stdout) does not work.
     puts("");
