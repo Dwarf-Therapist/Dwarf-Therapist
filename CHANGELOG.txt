@@ -1,3 +1,9 @@
+### Version 41.1.3 Patch Notes
+
+***
+ - added memory layouts for DF 0.47.01 and 0.47.02
+ - fixed a crash on macOS Catalina
+
 ### Version 41.1.2 Patch Notes
 
 ***
