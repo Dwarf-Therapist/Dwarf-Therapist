@@ -1,50 +1,82 @@
 git:
   depth: 1
-dist: trusty
-sudo: false
+dist: xenial
+sudo: true
 language: cpp
 matrix:
   include:
     - os: linux
-      language: generic
       compiler: gcc
       addons:
         apt:
           sources:
-            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:beineri/opt-qt-5.12.8-xenial'
+            - sourceline: 'deb https://apt.kitware.com/ubuntu/ xenial main'
+              key_url: 'https://apt.kitware.com/keys/kitware-archive-latest.asc'
           packages:
-            - g++-5
+            - g++
             - cmake
             - ninja-build
-            - qtbase5-dev
-            - qtbase5-dev-tools
-            - qtdeclarative5-dev
-            - qt5-qmake
+            - qt512base
+            - qt512declarative
+            - qt512tools
+            - mesa-common-dev
+            - libglu1-mesa-dev
       env:
-        - COMPILER=g++ CXX=g++-5 CC=gcc-5
-        - QT_PREFIX=/usr/lib/x86_64-linux-gnu/qt5
-        - APPDIR=DwarfTherapist.AppDir
-        - CMAKE_OPTIONS="-DCMAKE_INSTALL_PREFIX=$APPDIR/usr"
-        - RELEASE_FILE='DwarfTherapist-*.AppImage'
+        - CMAKE_GENERATOR=Ninja
     - os: osx
-      before_install:
-        - brew update
-        - brew install qt
-        - brew outdated cmake || brew upgrade cmake
-        - brew install ninja
       env:
-        - CXXFLAGS="$CXXFLAGS -mmacosx-version-min=10.9"
-        - QT_PREFIX=/usr/local/opt/qt
-        - CMAKE_PREFIX_PATH=$QT_PREFIX
-        - RELEASE_FILE='DwarfTherapist-*.dmg'
-env:
-  global:
-    - CXXFLAGS="-Wall -Wextra -Werror=all"
+        - CMAKE_OSX_DEPLOYMENT_TARGET=10.9
+        - QT_VERSION=5.9.9
+        - CMAKE_GENERATOR=Ninja
+    - os: osx
+      osx_image: xcode10.3
+      env:
+        - CMAKE_OSX_DEPLOYMENT_TARGET=10.12
+        - QT_VERSION=5.12.8
+        - CMAKE_GENERATOR=Ninja
+    - os: osx
+      osx_image: xcode11.3
+      env:
+        - CMAKE_OSX_DEPLOYMENT_TARGET=10.13
+        - QT_VERSION=5.15.0
+        - CMAKE_GENERATOR=Ninja
+    - os: windows
+      env:
+        - QT_VERSION=5.12.8
+        - QT_ARCH=win64_msvc2017_64
+        - CMAKE_GENERATOR="Visual Studio 15 2017"
+        - CMAKE_GENERATOR_PLATFORM=x64
+    - os: windows
+      env:
+        - QT_VERSION=5.6.3
+        - QT_ARCH=win32_msvc2015
+        - CMAKE_GENERATOR="Visual Studio 15 2017"
+        - CMAKE_GENERATOR_PLATFORM=Win32
+        - CMAKE_GENERATOR_TOOLSET=v140_xp
+before_install:
+  - ".travis/$TRAVIS_OS_NAME/install_deps.sh"
+  - |
+    case "$TRAVIS_OS_NAME" in
+    linux)
+      export QT_PREFIX=/opt/qt512
+      export PATH=${PATH//:\/usr\/local\/cmake-3.12.4\/bin/}
+      ;;
+    windows)
+      export QT_PREFIX="$HOME/Qt/$QT_VERSION/${QT_ARCH#*_}"
+      ;;
+    osx)
+      export QT_PREFIX="$HOME/Qt/$QT_VERSION/clang_64"
+      ;;
+    esac
 script:
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then export NPROC=$(nproc);
-    elif [ "$TRAVIS_OS_NAME" == "osx" ]; then export NPROC=$(sysctl -n hw.ncpu);
-    else export NPROC=1; fi
-  - cmake -GNinja ${CMAKE_OPTIONS} . && ninja -j $NPROC -k 0
+  - export SOURCE_DIR=$TRAVIS_BUILD_DIR
+  - export BINARY_DIR=$TRAVIS_BUILD_DIR/build
+  - if [ "$TRAVIS_OS_NAME" != windows ]; then export CXXFLAGS="-Wall -Wextra -Werror=all"; fi
+  - if [ "$CMAKE_GENERATOR" = Ninja ]; then export CMAKE_BUILD_TYPE=Release; fi
+  - cmake --version
+  - cmake -DCMAKE_PREFIX_PATH="$QT_PREFIX" -S "$SOURCE_DIR" -B "$BINARY_DIR"
+  - cmake --build "$TRAVIS_BUILD_DIR/build" --parallel 4 --config Release
 notifications:
   irc:
     on_success: change
@@ -60,7 +92,7 @@ deploy:
   api_key:
     secure: eeglXjGD3+a5eaOPZ6d/DZZEUByfP/7nskbs4NPjrFsUSJgzlJb9dkRgvdFr9W/i/QXMl+nEtqR36YDzxKO9qqoQEWXfRgh75qYjPoDKeeQtZ3/IryArVRa7A8dW2KcV3JBUyp+NOMeAe054sRIR+K4RLSKxZjwdVJUaPH5KpSC4ahsAZTJPHPXREYLUDzOAT5BFqYLOhzcsNniA1vJcxP0fQu25D+lRw/U87xilj3xUJtmTtmwsKHBODtMLuABR8auXIGmcLosUmvsEEIcDiHJo3QsKNDIW/WrCYmVmsvxremJc4Hl4aMbWCfRDXZ6pmJc41ZqswgLoYh4I9+NTl6CYbhST8i9VuoAxmL/gdyoovusFvOvqCPO9mXAmWfxIKoEZeUXNR8DrZrNCpp2OYpI3XA+LRUzjeX7K4xZCBoADQC5I9C8nGncj3jLdfxj4V4qAan4Phk6jrs0y8xiGHiSHOGaXSfXXL5yNArF95U2amzqt1HIh7KjjsJaigr2RwRg/6ircpSVUm4vj/7Vn4jOHncgApfj8n6Bzv65amwcuINCUlJPrA+EM2/LKCj9/ebXuC4rd0n8w9vEUY3I19UoN12Gwz+4BFIZgdNAa+38jFRV2fqgwsb+5c2gqWZZVl112SEhQUpCff5Ce76/7UHFZ5J9SPq8fMuimZVM3zbA=
   file_glob: true
-  file: $RELEASE_FILE
+  file: DwarfTherapist-*.*
   skip_cleanup: true
   on:
     tags: true
