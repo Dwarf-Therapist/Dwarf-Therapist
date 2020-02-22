@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "bodypartlayer.h"
 #include "dfinstance.h"
 #include "flagarray.h"
+#include "global_enums.h"
 #include "healthcategory.h"
 #include "memorylayout.h"
 #include "unithealth.h"
@@ -337,7 +338,7 @@ void UnitWound::add_detail(wounded_part_details &wpd, eHealth::H_INFO id, bool i
     if(!idx0 && !idx1 && !idx2)
         return;
 
-    if(((m_unitHealth->required_diagnosis() && wpd.diagnosed)|| !m_unitHealth->required_diagnosis()) || id == eHealth::HI_SEVERED) {
+    if(((m_unitHealth->required_diagnosis() && wpd.diagnosed)|| !m_unitHealth->required_diagnosis()) || id == eHealth::HI_SEVERED || id == eHealth::HI_GELDED) {
         QList<short> desc_index;
         if(m_unitHealth->get_display_categories().value(id)->allows_multiple()){
             if(idx0)
