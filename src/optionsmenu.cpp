@@ -390,7 +390,6 @@ void OptionsMenu::read_settings() {
     ui->cb_noble_highlight->setChecked(s->value("highlight_nobles", true).toBool());
     ui->cb_labor_exclusions->setChecked(s->value("labor_exclusions", true).toBool());
     ui->cb_no_diagnosis->setChecked(s->value("diagnosis_not_required",false).toBool());
-    ui->cb_animal_health->setChecked(s->value("animal_health",false).toBool());
 
     ui->chk_show_orientation->setChecked(s->value("tooltip_show_orientation",false).toBool());
     ui->chk_show_caste->setChecked(s->value("tooltip_show_caste", true).toBool());
@@ -540,7 +539,6 @@ void OptionsMenu::write_settings() {
         s->setValue("highlight_nobles", ui->cb_noble_highlight->isChecked());
         s->setValue("labor_exclusions", ui->cb_labor_exclusions->isChecked());
         s->setValue("diagnosis_not_required", ui->cb_no_diagnosis->isChecked());
-        s->setValue("animal_health", ui->cb_animal_health->isChecked());
         s->setValue("tooltip_font", m_tooltip_font.first);
         s->setValue("main_font", m_main_font.first);
         if (ui->cb_style->currentIndex() == 0)
@@ -692,7 +690,6 @@ void OptionsMenu::restore_defaults() {
     ui->cb_show_tooltips->setChecked(true);
     ui->cb_grid_health_colors->setChecked(true);
     ui->cb_no_diagnosis->setChecked(false);
-    ui->cb_animal_health->setChecked(false);
     ui->cb_attribute_syns->setChecked(true);
     ui->cb_pref_matches->setChecked(false);
     ui->cb_decorate_nobles->setChecked(false);

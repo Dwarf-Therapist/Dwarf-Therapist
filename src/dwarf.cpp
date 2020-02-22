@@ -298,11 +298,7 @@ void Dwarf::read_data() {
         read_noble_position();
         read_preferences();
 
-        if(!m_is_animal){
-            m_unit_health = UnitHealth(m_df,this,!DT->user_settings()->value("options/diagnosis_not_required", false).toBool());
-        }else if(DT->user_settings()->value("options/animal_health", false).toBool()){
-            m_unit_health = UnitHealth(m_df,this,false);
-        }
+        m_unit_health = UnitHealth(m_df,this,!DT->user_settings()->value("options/diagnosis_not_required", false).toBool());
         read_inventory();
 
         if(m_is_animal || m_nice_name == "")
@@ -2812,7 +2808,7 @@ QString Dwarf::tooltip_text() {
     if(m_is_animal)
         first_column.append(paragraph_with_title.arg(tr("Trained Level:")).arg(get_animal_trained_descriptor(m_animal_type)));
 
-    if(s->value("tooltip_show_health",false).toBool() && (!m_is_animal || (m_is_animal && s->value("animal_health",false).toBool()))){
+    if(s->value("tooltip_show_health",false).toBool()){
 
         bool symbols = s->value("tooltip_health_symbols",false).toBool();
         bool colors = s->value("tooltip_health_colors",true).toBool();
