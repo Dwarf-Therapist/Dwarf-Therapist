@@ -302,7 +302,7 @@ void DwarfModel::build_rows() {
                 } else {
                     m_grouped_dwarves[tr("Has Nickname")].append(d);
                 }
-            }else if(m_group_by == GB_HEALTH && (m_animal_health || (!m_animal_health && !d->is_animal()))){
+            }else if(m_group_by == GB_HEALTH){
                 int treatments = d->get_unit_health().get_treatment_summary(false,false).count();
                 int statuses = d->get_unit_health().get_status_summary(false,false).count();
                 int wounds = d->get_unit_health().get_wound_details().count();
@@ -933,7 +933,6 @@ void DwarfModel::read_settings(){
             m_symbol = QChar(0x002A); //asterisk
     }
 
-    m_animal_health = DT->user_settings()->value("options/animal_health",false).toBool();
     m_show_gender = s->value("options/grid/show_gender_icons",true).toBool();
     m_decorate_nobles = s->value("options/grid/decorate_noble_names",false).toBool();
     m_highlight_nobles = s->value("options/highlight_nobles",true).toBool();

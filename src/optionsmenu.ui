@@ -126,38 +126,6 @@
            </property>
           </widget>
          </item>
-         <item row="4" column="1">
-          <widget class="QCheckBox" name="cb_animal_health">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="statusTip">
-            <string>When checked, loads and shows health for livestock. This requires health columns to be added to a view set to show livestock!</string>
-           </property>
-           <property name="text">
-            <string>Read Livestock Health Information</string>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="1">
-          <widget class="QCheckBox" name="chk_format_numbers">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="statusTip">
-            <string>Abbreviate large numbers, such as experience and stress. For example this option would replace 100,000 stress with 100k.</string>
-           </property>
-           <property name="text">
-            <string>Abbreviate large numbers (xp, stress, etc.)</string>
-           </property>
-          </widget>
-         </item>
          <item row="5" column="0">
           <widget class="QCheckBox" name="cb_auto_expand">
            <property name="statusTip">
@@ -290,16 +258,6 @@
            </property>
           </widget>
          </item>
-         <item row="6" column="1">
-          <widget class="QCheckBox" name="cb_show_toolbar_text">
-           <property name="statusTip">
-            <string>When checked, shows various information on the toolbar</string>
-           </property>
-           <property name="text">
-            <string>Show Toolbar Button Text</string>
-           </property>
-          </widget>
-         </item>
          <item row="8" column="0">
           <layout class="QHBoxLayout" name="horizontalLayout_12">
            <item>
@@ -353,6 +311,32 @@
             </widget>
            </item>
           </layout>
+         </item>
+         <item row="4" column="1">
+          <widget class="QCheckBox" name="chk_format_numbers">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="statusTip">
+            <string>Abbreviate large numbers, such as experience and stress. For example this option would replace 100,000 stress with 100k.</string>
+           </property>
+           <property name="text">
+            <string>Abbreviate large numbers (xp, stress, etc.)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="QCheckBox" name="cb_show_toolbar_text">
+           <property name="statusTip">
+            <string>When checked, shows various information on the toolbar</string>
+           </property>
+           <property name="text">
+            <string>Show Toolbar Button Text</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>

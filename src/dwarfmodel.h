@@ -174,7 +174,6 @@ private:
     QColor m_curse_col;
     QBrush m_cursed_bg;
     QBrush m_cursed_bg_light;
-    bool m_animal_health;
     bool m_show_gender;
     bool m_decorate_nobles;
     bool m_highlight_nobles;
