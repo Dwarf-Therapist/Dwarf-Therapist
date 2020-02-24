@@ -79,8 +79,15 @@ Syndrome::Syndrome(DFInstance *df, VIRTADDR addr)
                 //transformation
                 LOGD << "reading syndrome type" << type << "(transformation)";
                 m_has_transform = true;
-                if(m_mem->is_valid_address(m_mem->syndrome_offset("trans_race_id")))
-                    m_transform_race = m_df->read_int(m_mem->syndrome_field(ce_addr, "trans_race_id"));
+                auto trans_race_id_offset = m_mem->syndrome_offset("trans_race_id");
+                auto trans_race_vec_offset = m_mem->syndrome_offset("trans_race_vec");
+                if (trans_race_id_offset != -1)
+                    m_transform_race = m_df->read_int(ce_addr + trans_race_id_offset);
+                else if (trans_race_vec_offset != -1) {
+                    auto race_vec = m_df->enum_vec<int32_t>(ce_addr + trans_race_vec_offset);
+                    if (!race_vec.isEmpty())
+                        m_transform_race = race_vec.first();
+                }
             }
         }
     }else{
