@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include "dtstandarditem.h"
 
 #include <QSettings>
+#include <cmath>
 
 SuperLaborColumn::SuperLaborColumn(const QString &title, QString id, ViewColumnSet *set, QObject *parent)
     : SkillColumn(title,-1, set, parent,CT_SUPER_LABOR)
@@ -86,7 +87,7 @@ void SuperLaborColumn::refresh(Dwarf *d, QStandardItem *item, QString title){
 
     float skill_rating = ml->get_skill_rating(d->id());
     item->setData(skill_rating, DwarfModel::DR_RATING);
-    item->setData(skill_rating, DwarfModel::DR_DISPLAY_RATING);
+    item->setData(std::round(skill_rating), DwarfModel::DR_DISPLAY_RATING);
     item->setData(ml->get_converted_labors(),DwarfModel::DR_LABORS);
     if(!d->can_set_labors()){
         item->setData(STATE_DISABLED, DwarfModel::DR_STATE);
