@@ -73,7 +73,7 @@
        <number>0</number>
       </property>
       <item>
-       <layout class="QVBoxLayout" name="v_layout_bg"/>
+       <layout class="QFormLayout" name="f_layout_bg"/>
       </item>
      </layout>
     </widget>
@@ -119,7 +119,7 @@
        <number>0</number>
       </property>
       <item>
-       <layout class="QVBoxLayout" name="v_layout_cells"/>
+       <layout class="QFormLayout" name="f_layout_cells"/>
       </item>
      </layout>
     </widget>

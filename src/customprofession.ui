@@ -37,53 +37,22 @@
     <number>4</number>
    </property>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,2">
-     <item>
+    <layout class="QFormLayout" name="formLayout">
+     <item row="0" column="0">
       <widget class="QLabel" name="label">
-       <property name="minimumSize">
-        <size>
-         <width>100</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>100</width>
-         <height>16777215</height>
-        </size>
-       </property>
        <property name="text">
         <string>Profession Name</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
        <property name="buddy">
         <cstring>name_edit</cstring>
        </property>
       </widget>
      </item>
-     <item>
+     <item row="0" column="1">
       <widget class="QLineEdit" name="name_edit"/>
      </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="hlayout_mask">
-     <item>
+     <item row="1" column="0">
       <widget class="QLabel" name="lbl_mask">
-       <property name="minimumSize">
-        <size>
-         <width>100</width>
-         <height>20</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>100</width>
-         <height>16777215</height>
-        </size>
-       </property>
        <property name="toolTip">
         <string>When applied as a mask other labors are not disabled.</string>
        </property>
@@ -96,12 +65,9 @@
        <property name="text">
         <string>Mask</string>
        </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
       </widget>
      </item>
-     <item>
+     <item row="1" column="1">
       <widget class="QCheckBox" name="chk_mask">
        <property name="minimumSize">
         <size>
@@ -132,24 +98,8 @@
        </property>
       </widget>
      </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="h_layout_roles">
-     <item>
+     <item row="2" column="0">
       <widget class="QLabel" name="lbl_roles">
-       <property name="minimumSize">
-        <size>
-         <width>100</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>100</width>
-         <height>16777215</height>
-        </size>
-       </property>
        <property name="toolTip">
         <string>Choosing a role allows you to sort the column based on the selected role ratings.</string>
        </property>
@@ -162,12 +112,9 @@
        <property name="text">
         <string>Role</string>
        </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
       </widget>
      </item>
-     <item>
+     <item row="2" column="1">
       <widget class="QComboBox" name="cb_roles">
        <property name="minimumSize">
         <size>
@@ -186,79 +133,48 @@
        </property>
       </widget>
      </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="hLayoutIcon">
-     <item>
+     <item row="3" column="0">
       <widget class="QLabel" name="lbl_icon_title">
-       <property name="minimumSize">
-        <size>
-         <width>100</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>100</width>
-         <height>16777215</height>
-        </size>
-       </property>
        <property name="text">
         <string>Icon</string>
        </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
       </widget>
      </item>
-     <item>
-      <widget class="QLabel" name="lbl_icon">
-       <property name="minimumSize">
-        <size>
-         <width>30</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>30</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>None</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
-      </widget>
+     <item row="3" column="1">
+      <layout class="QHBoxLayout" name="hLayoutIcon">
+       <item>
+        <widget class="QLabel" name="lbl_icon">
+         <property name="minimumSize">
+          <size>
+           <width>30</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>30</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>None</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnIcon">
+         <property name="text">
+          <string>Change Icon...</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
-     <item>
-      <widget class="QPushButton" name="btnIcon">
-       <property name="text">
-        <string>Change Icon...</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="hLayoutText">
-     <item>
+     <item row="4" column="0">
       <widget class="QLabel" name="lbl_prefix">
-       <property name="minimumSize">
-        <size>
-         <width>100</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>100</width>
-         <height>16777215</height>
-        </size>
-       </property>
        <property name="toolTip">
         <string>These characters will be drawn over the icon in the grid.</string>
        </property>
@@ -271,66 +187,38 @@
        <property name="text">
         <string>Text</string>
        </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
       </widget>
      </item>
-     <item>
-      <widget class="QLineEdit" name="le_prefix">
-       <property name="maximumSize">
-        <size>
-         <width>30</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="toolTip">
-        <string>These characters will be drawn over the icon in the grid.</string>
-       </property>
-       <property name="statusTip">
-        <string>These characters will be drawn over the icon in the grid.</string>
-       </property>
-       <property name="whatsThis">
-        <string>These characters will be drawn over the icon in the grid.</string>
-       </property>
-       <property name="maxLength">
-        <number>2</number>
-       </property>
-      </widget>
+     <item row="4" column="1">
+      <layout class="QHBoxLayout" name="h_text_layout">
+       <item>
+        <widget class="QLineEdit" name="le_prefix">
+         <property name="maximumSize">
+          <size>
+           <width>30</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>These characters will be drawn over the icon in the grid.</string>
+         </property>
+         <property name="statusTip">
+          <string>These characters will be drawn over the icon in the grid.</string>
+         </property>
+         <property name="whatsThis">
+          <string>These characters will be drawn over the icon in the grid.</string>
+         </property>
+         <property name="maxLength">
+          <number>2</number>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
-     <item>
-      <widget class="QLabel" name="lbl_txt_color">
-       <property name="text">
-        <string>Text Color</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="hlayout_bg_color">
-     <property name="sizeConstraint">
-      <enum>QLayout::SetFixedSize</enum>
-     </property>
-     <item>
+     <item row="5" column="0">
       <widget class="QLabel" name="lbl_bg">
-       <property name="minimumSize">
-        <size>
-         <width>100</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>100</width>
-         <height>16777215</height>
-        </size>
-       </property>
        <property name="text">
         <string>Background Color</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
      </item>
@@ -402,7 +290,6 @@
   </layout>
  </widget>
  <tabstops>
-  <tabstop>name_edit</tabstop>
   <tabstop>labor_list</tabstop>
   <tabstop>buttonBox</tabstop>
  </tabstops>

@@ -24,7 +24,7 @@ THE SOFTWARE.
 #include "vieweditordialog.h"
 #include "cellcolordef.h"
 #include "cellcolors.h"
-#include "customcolor.h"
+#include "colorbutton.h"
 #include "spacercolumn.h"
 #include "ui_vieweditor.h"
 #include "viewcolumncolors.h"
@@ -48,8 +48,6 @@ ViewEditorDialog::ViewEditorDialog(ViewColumnSet *set, QDialog *parent)
 }
 
 ViewEditorDialog::~ViewEditorDialog(){
-    delete m_col_bg;
-    m_custom_colors.clear();
     delete ui;
 }
 
@@ -128,28 +126,25 @@ void ViewEditorDialog::configure_ui(QObject *setter){
 }
 
 void ViewEditorDialog::init_cell_colors(CellColors *cc, CellColors *defaults, QColor bg_color){
-    int minWidth = 150;
-    m_col_bg = new CustomColor(tr("Background"),tr("Background color of the column."),"background", bg_color, this);
-    m_col_bg->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
-    m_col_bg->setMinimumWidth(minWidth);
-    ui->v_layout_bg->addWidget(m_col_bg);
+    m_col_bg = new ColorButton(bg_color);
+    m_col_bg->setStyleSheet("text-align: left; padding: 4px");
+    ui->f_layout_bg->addRow(tr("Background"), m_col_bg);
     //disabled by default
     ui->background_widget->setEnabled(false);
 
     int idx = 0;
     foreach(QSharedPointer<CellColorDef> ccd, cc->get_color_defs()){
-        CustomColor *c = new CustomColor(ccd->title(),ccd->description(),ccd->key(),defaults->get_color(idx),this);
-        c->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
-        c->setMinimumWidth(minWidth);
-        ui->v_layout_cells->addWidget(c);
-        c->set_color(cc->get_color(idx));
+        auto *c = new ColorButton(defaults->get_color(idx));
+        c->setStyleSheet("text-align: left; padding: 4px");
+        ui->f_layout_cells->addRow(ccd->title(), c);
+        c->setColor(cc->get_color(idx));
         m_custom_colors << c;
         idx++;
     }
 }
 
-QColor ViewEditorDialog::background_color() const {return m_col_bg->get_color();}
+QColor ViewEditorDialog::background_color() const {return m_col_bg->color();}
 QColor ViewEditorDialog::color(int idx) const{
-    return m_custom_colors.at(idx)->get_color();
+    return m_custom_colors.at(idx)->color();
 }
 
