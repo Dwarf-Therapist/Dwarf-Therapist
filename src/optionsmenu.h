@@ -24,13 +24,14 @@ THE SOFTWARE.
 #define OPTIONS_MENU_H
 
 #include <QDialog>
+#include <memory>
 #include "uberdelegate.h"
 
 #define MSG_WARN_READ "$WARN_READ"
 #define MSG_LIVESTOCK "$LIVESTOCK"
 
 namespace Ui { class OptionsMenu; }
-class CustomColor;
+class ColorButton;
 class QLabel;
 
 class OptionsMenu : public QDialog {
@@ -45,31 +46,28 @@ public:
     bool event(QEvent *evt);
     void showEvent(QShowEvent *evt);
 
-    public slots:
-        void accept();
-        void reject();
+public slots:
+    void accept();
+    void reject();
 
-        void restore_defaults();
-        void restore_update_defaults();
+    void restore_defaults();
+    void restore_update_defaults();
 
-        void show_row_font_chooser();
-        void show_header_font_chooser();
-        void show_tooltip_font_chooser();
-        void show_main_font_chooser();
+    void show_row_font_chooser();
+    void show_header_font_chooser();
+    void show_tooltip_font_chooser();
+    void show_main_font_chooser();
 
-        void show_font_chooser(QPair<QFont, QFont> &font_pair, QString msg, QLabel *l);
-        void show_current_font(QFont tmp, QLabel *l);
+    void show_font_chooser(QPair<QFont, QFont> &font_pair, QString msg, QLabel *l);
+    void show_current_font(QFont tmp, QLabel *l);
 
-        void set_skill_drawing_method(const UberDelegate::SKILL_DRAWING_METHOD&);
-        void tab_index_changed(int index);
+    void set_skill_drawing_method(const UberDelegate::SKILL_DRAWING_METHOD&);
+    void tab_index_changed(int index);
 
 private:
-    Ui::OptionsMenu *ui;
+    std::unique_ptr<Ui::OptionsMenu> ui;
     bool m_reading_settings;
-    QList<CustomColor*> m_general_colors;
-    QList<CustomColor*> m_happiness_colors;
-    QList<CustomColor*> m_noble_colors;
-    CustomColor* m_curse_color;
+    std::vector<std::pair<ColorButton *, QString>> m_color_widgets; // string is settings name
 
     //pair of normal/dirty fonts
     QPair<QFont,QFont> m_row_font;

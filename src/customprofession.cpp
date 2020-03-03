@@ -32,7 +32,7 @@ THE SOFTWARE.
 #include "defaultfonts.h"
 #include "multilabor.h"
 #include "superlabor.h"
-#include "customcolor.h"
+#include "colorbutton.h"
 #include "standardpaths.h"
 
 #include <QMessageBox>
@@ -172,12 +172,15 @@ int CustomProfession::show_builder_dialog(QWidget *parent) {
     build_role_combo(ui->cb_roles);
     connect(ui->cb_roles,SIGNAL(currentIndexChanged(int)),this,SLOT(role_changed(int)),Qt::UniqueConnection);
 
+
     //add font color chooser
-    m_font_custom_color = new CustomColor("",tr("The color of the text drawn over the icon."),"text_color", Qt::black, 0);
-    m_font_custom_color->set_color(m_font_color);
-    m_font_custom_color->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
-    ui->hLayoutText->insertWidget(3,m_font_custom_color);
-    connect(m_font_custom_color, SIGNAL(color_changed(QString,QColor)), this, SLOT(color_selected(QString,QColor)));
+    m_font_custom_color = new ColorButton(Qt::black);
+    m_font_custom_color->setColor(m_font_color);
+    ui->h_text_layout->addWidget(m_font_custom_color);
+    connect(m_font_custom_color, &ColorButton::colorChanged, [this](const QColor &col) {
+            m_font_color = col;
+            refresh_icon();
+        });
 
     //setup the mask
     ui->chk_mask->setChecked(m_is_mask);
@@ -185,11 +188,17 @@ int CustomProfession::show_builder_dialog(QWidget *parent) {
     connect(ui->chk_mask,SIGNAL(clicked(bool)),this,SLOT(mask_changed(bool)));
 
     //add background color chooser
-    m_bg_custom_color = new CustomColor("",tr("The background color of the icon."), "bg_color", Qt::transparent, 0);
-    m_bg_custom_color->set_color(m_bg_color);
+    m_bg_custom_color = new ColorButton(Qt::transparent, 0);
+    m_bg_custom_color->setColor(m_bg_color);
+    int row;
+    QFormLayout::ItemRole item_role;
+    ui->formLayout->getWidgetPosition(ui->lbl_bg, &row, &item_role);
+    ui->formLayout->setWidget(row, QFormLayout::FieldRole, m_bg_custom_color);
     connect(m_bg_custom_color, SIGNAL(color_changed(QString,QColor)), this, SLOT(color_selected(QString,QColor)));
-    m_bg_custom_color->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
-    ui->hlayout_bg_color->insertWidget(1,m_bg_custom_color);
+    connect(m_bg_custom_color, &ColorButton::colorChanged, [this](const QColor &col) {
+            m_bg_color = col;
+            refresh_icon();
+        });
 
     //no id number means it's a custom profession which can have labors, otherwise it's simply an icon/text override
     if(m_prof_id < 0){
@@ -299,15 +308,6 @@ void CustomProfession::choose_icon(){
     IconChooser *ic = new IconChooser();
     ic->exec();
     build_icon_path(ic->selected_id());
-    refresh_icon();
-}
-
-void CustomProfession::color_selected(QString key, QColor col){
-    if(key == "bg_color"){
-        m_bg_color = col;
-    }else{
-        m_font_color = col;
-    }
     refresh_icon();
 }
 

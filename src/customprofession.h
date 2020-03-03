@@ -31,7 +31,7 @@ THE SOFTWARE.
 class Dwarf;
 class QObject;
 class QFont;
-class CustomColor;
+class ColorButton;
 
 namespace Ui
 {
@@ -90,7 +90,6 @@ public slots:
     void build_icon_path(int id);
     void choose_icon();
     void refresh_icon();
-    void color_selected(QString key,QColor col);
     void prefix_changed(QString val);
     void role_changed(int);
 
@@ -104,8 +103,8 @@ private:
     int m_icon_id;
     bool m_is_mask;
 
-    CustomColor *m_font_custom_color;
-    CustomColor *m_bg_custom_color;
+    ColorButton *m_font_custom_color;
+    ColorButton *m_bg_custom_color;
     QColor m_font_color;
     QColor m_bg_color;
 

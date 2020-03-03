@@ -77,9 +77,9 @@ add_executable(DwarfTherapist WIN32 MACOSX_BUNDLE
     src/caste.cpp
     src/cellcolordef.h
     src/cellcolors.cpp
+    src/colorbutton.cpp
     src/contextmenuhelper.cpp
     src/currentjobcolumn.cpp
-    src/customcolor.cpp
     src/customprofessioncolumn.cpp
     src/customprofession.cpp
     src/defaultfonts.cpp
@@ -202,7 +202,6 @@ add_executable(DwarfTherapist WIN32 MACOSX_BUNDLE
     src/viewmanager.cpp
     src/weaponcolumn.cpp
     src/word.cpp
-    thirdparty/qtcolorpicker-2.6/qtcolorpicker.cpp
     resources.qrc
     ${SOURCES})
 target_link_libraries(DwarfTherapist Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Qml Qt5::Network Qt5::Concurrent ${LIBS})

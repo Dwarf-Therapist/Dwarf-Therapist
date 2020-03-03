@@ -1,6 +1,6 @@
 /*
 Dwarf Therapist
-Copyright (c) 2009 Trey Stout (chmod)
+Copyright (c) 2020 Clement Vuchener
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,42 +20,43 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef CUSTOM_COLOR_H
-#define CUSTOM_COLOR_H
+#ifndef COLOR_BUTTON_H
+#define COLOR_BUTTON_H
 
+#include <QAction>
+#include <QMenu>
 #include <QWidget>
-#include "qtcolorpicker.h"
 
-class CustomColor : public QWidget {
+class QToolButton;
+
+class ColorButton: public QWidget
+{
     Q_OBJECT
+    Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
 public:
-    CustomColor(QString setting_name, QString tooltip, QString config_key, QColor default_color, QWidget *parent = 0);
+    ColorButton(const QColor &default_color = {}, QWidget *parent = nullptr);
 
-    void set_color(QColor new_color) {m_picker->setCurrentColor(new_color);}
-    QColor get_color() {return m_picker->currentColor();}
-    QColor get_default() {return m_default;}
-    bool is_dirty() {return m_dirty;}
-    void reset_to_default() {m_picker->setCurrentColor(m_default);}
-    void reset_to_last() {m_picker->setCurrentColor(m_last_color);}
-    QString get_config_key() {return m_config_key;}
+    const QColor &color() const;
+    const QColor &defaultColor() const;
 
-
-private:
-    QString m_name;
-    QString m_tooltip;
-    QString m_config_key;
-    QtColorPicker *m_picker;
-    QLabel *m_label;
-    QColor m_default;
-    QColor m_last_color;
-
-    bool m_dirty;
-
-    private slots:
-        void color_changed(const QColor &);
+public slots:
+    void setColor(const QColor &color);
+    void resetToDefault();
 
 signals:
-    void color_changed(QString config_key, const QColor &new_color);
+    void colorChanged(const QColor &color);
+
+private:
+    void update();
+    QPixmap makeColorIcon(const QColor &color) const;
+
+    QColor m_default_color;
+    QColor m_current_color;
+    QBrush m_checker_brush;
+    QToolButton *m_button;
+    QAction m_change_color;
+    QMenu m_menu;
+    QAction *m_reset;
 };
 
 #endif

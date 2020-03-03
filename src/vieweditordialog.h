@@ -9,7 +9,7 @@ namespace Ui { class ViewEditor; }
 
 class ViewColumn;
 class ViewColumnSet;
-class CustomColor;
+class ColorButton;
 class CellColors;
 
 class ViewEditorDialog : public QDialog {
@@ -25,9 +25,9 @@ public:
     QColor background_color() const;
     QColor color(int idx) const;
 
-protected:
-    CustomColor *m_col_bg;
-    QList<CustomColor*> m_custom_colors;
+private:
+    ColorButton *m_col_bg;
+    QList<ColorButton*> m_custom_colors;
 
     void init_cell_colors(CellColors *cc, CellColors *defaults, QColor bg_color);
 

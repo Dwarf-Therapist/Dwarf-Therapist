@@ -2091,28 +2091,40 @@
       <attribute name="title">
        <string>Grid Colors</string>
       </attribute>
-      <widget class="QCheckBox" name="cb_grid_health_colors">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>10</y>
-         <width>321</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="toolTip">
-        <string>When checked, health columns will draw their symbols in color.</string>
-       </property>
-       <property name="statusTip">
-        <string>When checked, health columns will draw their symbols in color.</string>
-       </property>
-       <property name="whatsThis">
-        <string>When checked, health columns will draw their symbols in color.</string>
-       </property>
-       <property name="text">
-        <string>Use colors when drawing health symbols.</string>
-       </property>
-      </widget>
+      <layout class="QVBoxLayout" name="verticalLayout_9">
+       <item>
+        <widget class="QCheckBox" name="cb_grid_health_colors">
+         <property name="toolTip">
+          <string>When checked, health columns will draw their symbols in color.</string>
+         </property>
+         <property name="statusTip">
+          <string>When checked, health columns will draw their symbols in color.</string>
+         </property>
+         <property name="whatsThis">
+          <string>When checked, health columns will draw their symbols in color.</string>
+         </property>
+         <property name="text">
+          <string>Use colors when drawing health symbols.</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QFormLayout" name="grid_color_layout"/>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_6">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>478</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
      </widget>
      <widget class="QWidget" name="tab_happiness_colors">
       <attribute name="icon">
@@ -2122,34 +2134,46 @@
       <attribute name="title">
        <string>Happiness</string>
       </attribute>
-      <widget class="QCheckBox" name="cb_happiness_icons">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>10</y>
-         <width>130</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="toolTip">
-        <string/>
-       </property>
-       <property name="statusTip">
-        <string>Show icons in addition to colors for the happiness column.</string>
-       </property>
-       <property name="whatsThis">
-        <string>Show icons in addition to colors for the happiness column.</string>
-       </property>
-       <property name="text">
-        <string>Show Happiness Icons</string>
-       </property>
-      </widget>
+      <layout class="QVBoxLayout" name="verticalLayout_8">
+       <item>
+        <widget class="QCheckBox" name="cb_happiness_icons">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string/>
+         </property>
+         <property name="statusTip">
+          <string>Show icons in addition to colors for the happiness column.</string>
+         </property>
+         <property name="whatsThis">
+          <string>Show icons in addition to colors for the happiness column.</string>
+         </property>
+         <property name="text">
+          <string>Show Happiness Icons</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QFormLayout" name="happiness_color_layout"/>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
      </widget>
      <widget class="QWidget" name="tab_noble_colors">
       <attribute name="icon">
@@ -2159,31 +2183,43 @@
       <attribute name="title">
        <string>Nobles</string>
       </attribute>
-      <widget class="QCheckBox" name="cb_noble_highlight">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>10</y>
-         <width>541</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>16777213</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="statusTip">
-        <string>When checked, highlights units assigned to noble positions based on the colors specified below. $WARN_READ</string>
-       </property>
-       <property name="autoFillBackground">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>Highlight Nobles</string>
-       </property>
-      </widget>
+      <layout class="QVBoxLayout" name="verticalLayout_10">
+       <item>
+        <widget class="QCheckBox" name="cb_noble_highlight">
+         <property name="maximumSize">
+          <size>
+           <width>16777213</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="statusTip">
+          <string>When checked, highlights units assigned to noble positions based on the colors specified below. $WARN_READ</string>
+         </property>
+         <property name="autoFillBackground">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Highlight Nobles</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QFormLayout" name="noble_color_layout"/>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_9">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>478</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
      </widget>
      <widget class="QWidget" name="tab_roles">
       <attribute name="icon">
