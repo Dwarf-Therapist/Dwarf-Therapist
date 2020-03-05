@@ -86,13 +86,13 @@ OptionsMenu::OptionsMenu(QWidget *parent)
     had_mood_color->setDisabled(!ui->cb_moodable->isChecked());
 
     for (const auto &t: {
-            std::make_tuple(tr("Ecstatic"), tr("Color shown in happiness columns when a dwarf is <b>ecstatic</b>."), DH_ECSTATIC, QColor(0x00FF00)),
-            std::make_tuple(tr("Happy"), tr("Color shown in happiness columns when a dwarf is <b>happy</b>."), DH_HAPPY, QColor(0x71cc09)),
-            std::make_tuple(tr("Content"), tr("Color shown in happiness columns when a dwarf is <b>quite content</b>."), DH_CONTENT, QColor(0xDDDD00)),
-            std::make_tuple(tr("Fine"), tr("Color shown in happiness columns when a dwarf is <b>fine</b>."), DH_FINE, QColor(0xe7e2ab)),
-            std::make_tuple(tr("Unhappy"), tr("Color shown in happiness columns when a dwarf is <b>unhappy</b>."), DH_UNHAPPY, QColor(0xffaa00)),
-            std::make_tuple(tr("Very Unhappy"), tr("Color shown in happiness columns when a dwarf is <b>very unhappy</b>."), DH_VERY_UNHAPPY, QColor(0xCC0000)),
-            std::make_tuple(tr("Miserable"), tr("Color shown in happiness columns when a dwarf is <b>miserable.</b>"), DH_MISERABLE, QColor(0xFF0000)),
+            std::make_tuple(tr("Ecstatic"), tr("Color shown in happiness columns when a dwarf is <b>ecstatic</b>."), DH_ECSTATIC, QColor(0x00ff80)),
+            std::make_tuple(tr("Happy"), tr("Color shown in happiness columns when a dwarf is <b>happy</b>."), DH_HAPPY, QColor(0x33ff33)),
+            std::make_tuple(tr("Content"), tr("Color shown in happiness columns when a dwarf is <b>quite content</b>."), DH_CONTENT, QColor(0xb3ff66)),
+            std::make_tuple(tr("Fine"), tr("Color shown in happiness columns when a dwarf is <b>fine</b>."), DH_FINE, QColor(0xffff99)),
+            std::make_tuple(tr("Unhappy"), tr("Color shown in happiness columns when a dwarf is <b>unhappy</b>."), DH_UNHAPPY, QColor(0xffcc66)),
+            std::make_tuple(tr("Very Unhappy"), tr("Color shown in happiness columns when a dwarf is <b>very unhappy</b>."), DH_VERY_UNHAPPY, QColor(0xff7733)),
+            std::make_tuple(tr("Miserable"), tr("Color shown in happiness columns when a dwarf is <b>miserable.</b>"), DH_MISERABLE, QColor(0xff0000)),
             }) {
         add_color_row(ui->happiness_color_layout,
                       std::get<0>(t),
