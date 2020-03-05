@@ -580,6 +580,8 @@ void OptionsMenu::restore_update_defaults(){
 }
 
 void OptionsMenu::restore_defaults() {
+    int idx;
+
     for (const auto &p: m_color_widgets)
         p.first->resetToDefault();
 
@@ -634,7 +636,7 @@ void OptionsMenu::restore_defaults() {
     ui->chk_show_kills->setChecked(false);
     ui->chk_show_needs->setChecked(false);
     ui->rad_syn_names->setChecked(true);
-    int idx = ui->cb_thought_time->findData(-1);
+    idx = ui->cb_thought_time->findData(-1);
     if(idx != -1)
         ui->cb_thought_time->setCurrentIndex(idx);
 
@@ -684,7 +686,9 @@ void OptionsMenu::restore_defaults() {
     ui->sb_cell_size->setValue(DEFAULT_CELL_SIZE);
     ui->sb_cell_padding->setValue(0);
 
-    set_skill_drawing_method(UberDelegate::SDM_NUMERIC);
+    idx = ui->cb_skill_drawing_method->findData(UberDelegate::SDM_NUMERIC);
+    if(idx != -1)
+        ui->cb_skill_drawing_method->setCurrentIndex(idx);
 
     restore_update_defaults();
 }
@@ -720,7 +724,9 @@ void OptionsMenu::set_skill_drawing_method(const UberDelegate::SKILL_DRAWING_MET
     LOGD << "Setting SDM to" << UberDelegate::name_for_method(sdm);
     QSettings *s = DT->user_settings();
     s->setValue("options/grid/skill_drawing_method", static_cast<int>(sdm));
-    read_settings(); // to set the combo-box correctly
+    int idx = ui->cb_skill_drawing_method->findData(sdm);
+    if(idx != -1)
+        ui->cb_skill_drawing_method->setCurrentIndex(idx);
     emit settings_changed();
 }
 
