@@ -1,3 +1,9 @@
+### Version 41.1.5 Patch Notes
+
+***
+ - added memory layouts for DF 0.47.04
+ - fixed super labor column average skill display (rounded to fit)
+
 ### Version 41.1.4 Patch Notes
 
 ***
