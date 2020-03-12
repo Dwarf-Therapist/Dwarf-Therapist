@@ -32,7 +32,7 @@ const QList<QColor> Thought::m_base_colors = Thought::set_base_colors();
 Thought::Thought(int id, QObject *parent)
     : QObject(parent)
     , m_title(QString("%1 - Unknown").arg(QString::number(id)))
-    , m_description("This is an unknown thought, please report it!")
+    , m_description(tr("This is an unknown thought (%1), please report it!").arg(id))
     , m_effect(0)
     , m_subtype(-1)
     , m_id(id)
