@@ -643,7 +643,13 @@ void MainWindow::read_dwarves() {
         ui->cb_group_by->blockSignals(false);
     }
 
-    this->setWindowTitle(QString("%1 %2").arg(tr("Dwarf Therapist - ")).arg(m_df->fortress_name()));
+    auto date = m_df->current_date();
+    auto date_str = QString("%1-%2-%3")
+        .arg(std::get<df_year>(date).count())
+        .arg(std::get<df_month>(date).count()+1, 2, 10, QChar('0'))
+        .arg(std::get<df_day>(date).count()+1, 2, 10, QChar('0'));
+
+    this->setWindowTitle(tr("%1 on %2").arg(m_df->fortress_name()).arg(date_str));
 
     LOGI << "completed read in" << t.elapsed() << "ms";
     set_progress_message("");
@@ -1719,7 +1725,7 @@ void MainWindow::reset(){
         ui->cb_group_by->blockSignals(false);
     }
 
-    this->setWindowTitle("Dwarf Therapist - Disconnected");
+    this->setWindowTitle(tr("Disconnected"));
 
     DwarfDetailsDock *dock = qobject_cast<DwarfDetailsDock*>(QObject::findChild<DwarfDetailsDock*>("dock_dwarf_details"));
     if(dock)
