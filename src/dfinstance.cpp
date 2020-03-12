@@ -817,6 +817,12 @@ const QString DFInstance::fortress_name(){
     return name;
 }
 
+QString DFInstance::current_date() const {
+    auto month = m_cur_year_tick/ticks_per_month;
+    auto day = (m_cur_year_tick-month*ticks_per_month)/ticks_per_day;
+    return QString("%1-%2-%3").arg(m_current_year).arg(month+1, 2, 10, QChar('0')).arg(day+1, 2, 10, QChar('0'));
+}
+
 void DFInstance::refresh_data(){
     VIRTADDR current_year = m_layout->global_address("current_year");
     LOGD << "loading current year from" << hexify(current_year);

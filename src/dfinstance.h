@@ -266,6 +266,7 @@ public:
 
     const QString fortress_name();
     QList<Squad*> squads() {return m_squads;}
+    QString current_date() const;
 
 protected:
     VIRTADDR m_base_addr;

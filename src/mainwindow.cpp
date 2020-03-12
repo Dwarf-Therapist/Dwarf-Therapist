@@ -642,7 +642,7 @@ void MainWindow::read_dwarves() {
         ui->cb_group_by->blockSignals(false);
     }
 
-    this->setWindowTitle(QString("%1 %2").arg(tr("Dwarf Therapist - ")).arg(m_df->fortress_name()));
+    this->setWindowTitle(tr("%1 on %2").arg(m_df->fortress_name()).arg(m_df->current_date()));
 
     LOGI << "completed read in" << t.elapsed() << "ms";
     set_progress_message("");
@@ -1718,7 +1718,7 @@ void MainWindow::reset(){
         ui->cb_group_by->blockSignals(false);
     }
 
-    this->setWindowTitle("Dwarf Therapist - Disconnected");
+    this->setWindowTitle(tr("Disconnected"));
 
     DwarfDetailsDock *dock = qobject_cast<DwarfDetailsDock*>(QObject::findChild<DwarfDetailsDock*>("dock_dwarf_details"));
     if(dock)
