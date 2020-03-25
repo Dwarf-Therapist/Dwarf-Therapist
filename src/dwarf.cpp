@@ -2026,27 +2026,24 @@ void Dwarf::read_personality() {
                 }
             }
         }
+
         //add special traits for cave adaptation and detachment, scale them to normal trait ranges
-        if(!m_is_animal){
-            int combat_hardened = m_df->read_int(m_mem->soul_field(personality_addr, "combat_hardened"));
-            //scale from 40-90. this sets the values (33,75,100) at 56,78,90 respectively
-            //since anything below 65 doesn't really have an effect
-            combat_hardened = ((combat_hardened*(90-40)) / 100) + 40;
-            m_traits.insert(-1,combat_hardened);
-            if(has_state(STATE_CAVE_ADAPT)){
-                //cave adapt is in ticks, 1 year and 1.5 years. only include it if there's a value > 0
-                int val = state_value(STATE_CAVE_ADAPT);
-                if(val > 0){
-                    //scale from 40-90. this will set 1 year at 73, and 1.5 years at 90
-                    //anything below that we don't want to draw as it won't have an effect, and
-                    //the drawing will only start at > 60 (~7.5 months)
-                    val = ((val*(90-40)) / 604800) + 40;
-                    if(val > 100)
-                        val = 100;
-                    m_traits.insert(-2,val);
-                }
-            }
-        }
+
+        int combat_hardened = m_df->read_int(m_mem->soul_field(personality_addr, "combat_hardened"));
+        //scale from 40-90. this sets the values (33,75,100) at 56,78,90 respectively
+        //since anything below 65 doesn't really have an effect
+        combat_hardened = ((combat_hardened*(90-40)) / 100) + 40;
+        m_traits.insert(-1,combat_hardened);
+
+        int cave_adapt = has_state(STATE_CAVE_ADAPT) ? state_value(STATE_CAVE_ADAPT) : 0;
+        //cave adapt is in ticks, 1 year and 1.5 years. only include it if there's a value > 0
+        //scale from 40-90. this will set 1 year at 73, and 1.5 years at 90
+        //anything below that we don't want to draw as it won't have an effect, and
+        //the drawing will only start at > 60 (~7.5 months)
+        cave_adapt = ((cave_adapt*(90-40)) / 604800) + 40;
+        if(cave_adapt > 100)
+            cave_adapt = 100;
+        m_traits.insert(-2,cave_adapt);
 
         QVector<VIRTADDR> m_goals_addrs = m_df->enumerate_vector(m_mem->soul_field(personality_addr, "goals"));
         m_goals.clear();
