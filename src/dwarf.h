@@ -93,8 +93,6 @@ public:
 
     enum MISC_STATES {
         STATE_MIGRANT = 7,
-        STATE_OUTDOORS = 14,
-        STATE_HARDENED = 15,
         STATE_ON_BREAK = 17,
         STATE_CAVE_ADAPT = 19
     };

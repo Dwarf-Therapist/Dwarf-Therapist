@@ -916,13 +916,6 @@ void Dwarf::read_preferences(){
         m_preferences.emplace(pref_type, std::move(p));
     }
 
-    //add a special preference (actually a misc trait) for like outdoors
-    if (has_state(STATE_OUTDOORS))
-        m_preferences.emplace(
-                LIKE_OUTDOORS,
-                std::make_unique<OutdoorPreference>(state_value(STATE_OUTDOORS))
-        );
-
     bool build_tooltip = (!m_is_animal && !m_preferences.empty() && DT->user_settings()->value("options/tooltip_show_preferences",true).toBool());
     //group preferences into pref desc - values (string list)
     QString desc_key;
@@ -2035,13 +2028,11 @@ void Dwarf::read_personality() {
         }
         //add special traits for cave adaptation and detachment, scale them to normal trait ranges
         if(!m_is_animal){
-            if(has_state(STATE_HARDENED)){
-                int val = state_value(STATE_HARDENED);
-                //scale from 40-90. this sets the values (33,75,100) at 56,78,90 respectively
-                //since anything below 65 doesn't really have an effect
-                val = ((val*(90-40)) / 100) + 40;
-                m_traits.insert(-1,val);
-            }
+            int combat_hardened = m_df->read_int(m_mem->soul_field(personality_addr, "combat_hardened"));
+            //scale from 40-90. this sets the values (33,75,100) at 56,78,90 respectively
+            //since anything below 65 doesn't really have an effect
+            combat_hardened = ((combat_hardened*(90-40)) / 100) + 40;
+            m_traits.insert(-1,combat_hardened);
             if(has_state(STATE_CAVE_ADAPT)){
                 //cave adapt is in ticks, 1 year and 1.5 years. only include it if there's a value > 0
                 int val = state_value(STATE_CAVE_ADAPT);
@@ -2100,6 +2091,14 @@ void Dwarf::read_personality() {
             m_current_focus_degree = FOCUS_QUITE_FOCUSED;
         else
             m_current_focus_degree = FOCUS_VERY_FOCUSED;
+
+        //add a special preference for like outdoors
+        int likes_outdoors = m_df->read_int(m_mem->soul_field(personality_addr, "likes_outdoors"));
+        if (likes_outdoors > 0)
+            m_preferences.emplace(
+                    LIKE_OUTDOORS,
+                    std::make_unique<OutdoorPreference>(likes_outdoors)
+            );
     }
 }
 
