@@ -79,6 +79,9 @@ void DwarfStats::init(const QVector<double> &values)
 
 double DwarfStats::rating(double val) const
 {
-    return m_stats->get_rating(val);
+    if (m_stats)
+        return m_stats->get_rating(val);
+    else
+        return 0.5;
 }
 
