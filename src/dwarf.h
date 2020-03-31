@@ -205,9 +205,9 @@ public:
     Q_INVOKABLE bool is_pet() {return m_is_pet;}
     Q_INVOKABLE TRAINED_LEVEL trained_level() {return m_animal_type;}
 
-    Q_INVOKABLE bool is_adult() {return (!m_is_child && !m_is_baby) ? true : false;}
-    Q_INVOKABLE bool is_child() {return m_is_child;}
-    Q_INVOKABLE bool is_baby() {return m_is_baby;}
+    Q_INVOKABLE bool is_adult() {return !is_child() && !is_baby();}
+    Q_INVOKABLE bool is_child() {return m_raw_prof_id == 103;}
+    Q_INVOKABLE bool is_baby() {return m_raw_prof_id == 104;}
 
     Q_INVOKABLE bool is_citizen() {return m_is_citizen;}
 
@@ -719,8 +719,6 @@ private:
     QList<short> m_thoughts;
     QList<UnitEmotion*> m_emotions;
     QString m_emotions_desc;
-    bool m_is_child;
-    bool m_is_baby;
     bool m_is_animal;
     QString m_true_name; //used for vampires
     int m_true_birth_year; //used for vampires

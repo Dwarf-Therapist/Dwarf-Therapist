@@ -106,8 +106,6 @@ Dwarf::Dwarf(DFInstance *df, VIRTADDR addr, QObject *parent)
     , m_caste(0)
     , m_pref_tooltip(QString::null)
     , m_emotions_desc(QString::null)
-    , m_is_child(false)
-    , m_is_baby(false)
     , m_is_animal(false)
     , m_true_name("")
     , m_true_birth_year(0)
@@ -402,13 +400,6 @@ void Dwarf::set_age_and_migration(VIRTADDR birth_year_offset, VIRTADDR birth_tim
     m_born_in_fortress = (m_ticks_since_birth == m_turn_count);
 
     m_age_in_months = m_ticks_since_birth /  m_df->ticks_per_month;
-
-    if(m_caste){
-        if(m_age == 0 || m_ticks_since_birth < m_caste->baby_age() *  m_df->ticks_per_year)
-            m_is_baby = true;
-        else if(m_ticks_since_birth < m_caste->child_age() *  m_df->ticks_per_year)
-            m_is_child = true;
-    }
 }
 
 QString Dwarf::get_migration_desc(){
@@ -784,14 +775,15 @@ void Dwarf::read_profession() {
     }
 
     if(is_animal()){
-        if(m_raw_prof_id == 102 && is_adult())
-            m_prof_name = tr("Adult"); //adult animals have a profession of peasant by default, just use adult
-        else if(m_is_child){
+        switch (m_raw_prof_id) {
+        case 103: // child
             m_prof_name = tr("Child");
-            m_raw_prof_id = 103;
-        }else if(m_is_baby){
+            break;
+        case 104: // baby
             m_prof_name = tr("Baby");
-            m_raw_prof_id = 104;
+            break;
+        default:
+            m_prof_name = tr("Adult"); //adult animals have a profession of peasant by default, just use adult
         }
     }
 
@@ -1150,7 +1142,7 @@ void Dwarf::check_availability(){
         //however this would also disable other labours like alchemy not used in DF
         if(m_raw_profession){
             m_can_set_labors = m_raw_profession->can_assign_labors();
-            if(!m_is_baby && DT->labor_cheats_allowed()){
+            if(!is_baby() && DT->labor_cheats_allowed()){
                 m_can_set_labors = true;
             }
             if(!m_can_set_labors){
@@ -1354,12 +1346,12 @@ QString Dwarf::race_name(bool base, bool plural_name) {
     if(base)
         return r_name;
 
-    if(m_is_baby){
+    if(is_baby()){
         if(!plural_name)
             r_name = m_race->baby_name();
         else
             r_name = m_race->baby_name_plural();
-    }else if (m_is_child){
+    }else if (is_child()){
         if(!plural_name)
             r_name = m_race->child_name();
         else
@@ -1710,7 +1702,7 @@ void Dwarf::read_inventory(){
     }
 
     //ensure babies and animals have 100 coverage rating as they don't wear anything
-    if(m_is_baby || m_is_animal){
+    if(is_baby() || m_is_animal){
         has_pants = true;
         has_shirt = true;
         shoes_count = 2;
@@ -1854,7 +1846,7 @@ void Dwarf::read_skills() {
 
         Skill s = Skill(skill_id, xp, rating, rust, skill_rate);
         //calculate the values we'll need for roles immediately
-        if(!m_is_animal && !m_is_baby){
+        if(!m_is_animal && !is_baby()){
             s.calculate_balanced_level();
         }
 
@@ -2191,7 +2183,7 @@ void Dwarf::load_attribute(VIRTADDR &addr, ATTRIBUTES_TYPE id){
     Attribute a = Attribute(id, value, display_value, limit, cti, desc.first, desc.second);
 
     //immediately calculate balanced value for roles
-    if(!m_is_baby && !m_is_animal)
+    if(!is_baby() && !m_is_animal)
         a.calculate_balanced_value();
 
     if(m_attribute_syndromes.contains(id))
@@ -2263,7 +2255,7 @@ short Dwarf::labor_rating(int labor_id) {
 }
 
 QString Dwarf::get_age_formatted(){
-    if(m_is_baby){
+    if(m_age_in_months < 12){
         return QString::number(m_age_in_months).append(tr(" Month").append(m_age_in_months == 1 ? "" : "s").append(tr(" Old")));
     }else{
         return QString::number(m_age).append(tr(" Year").append(m_age == 1 ? "" : "s").append(tr(" Old")));
