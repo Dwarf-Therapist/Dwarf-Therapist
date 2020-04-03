@@ -1,3 +1,13 @@
+### Version 41.1.6 Patch Notes
+
+***
+ - added thought ID in unknown thoughts description
+ - fixed focus offset in 0.47.x memory layouts
+ - fixed a crash when there is no "labor capable" dwarves
+ - changed baby/child/adult status based on profession rather than age
+ - fixed reading "Detachment" facet (a.k.a combat hardened) and "likes outdoors" preference
+ - fixed "Cave Adaptation" sorting (no cave adaptation now has a valid rating)
+
 ### Version 41.1.5 Patch Notes
 
 ***
