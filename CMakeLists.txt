@@ -27,8 +27,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(Qt5 REQUIRED COMPONENTS Qml Widgets Concurrent)
 
-include(CPack)
-include(InstallRequiredSystemLibraries)
 include_directories(src ${CMAKE_BINARY_DIR}/src thirdparty/qtcolorpicker-2.6)
 
 if(WIN32)
@@ -236,4 +234,11 @@ if(UNIX AND NOT APPLE)
         install(DIRECTORY dist/xdg/
                 DESTINATION share)
     endif()
+elseif(WIN32)
+    install(TARGETS DwarfTherapist
+            RUNTIME DESTINATION .)
+    install(DIRECTORY share/
+            DESTINATION data)
+    install(FILES LICENSE.txt README.rst CHANGELOG.txt ${CMAKE_BINARY_DIR}/lnp/manifest.json
+            DESTINATION .)
 endif()
