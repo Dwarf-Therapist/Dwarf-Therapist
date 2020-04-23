@@ -448,11 +448,16 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         QTableWidgetItem *attribute_msg = new QTableWidgetItem(lvl_msg);
         attribute_msg->setToolTip(lvl_msg);
 
-        if(a.get_descriptor_rank() <= 3) { //3 is the last bin before the median group
-            attribute_name->setForeground(adaptive.color(COLOR_LOW));
-            attribute_rating->setForeground(adaptive.color(COLOR_LOW));
-            attribute_max->setForeground(adaptive.color(COLOR_LOW));
-            attribute_msg->setForeground(adaptive.color(COLOR_LOW));
+        QColor c;
+        if(a.get_descriptor_rank() <= 3)  //3 is the last bin before the median group
+            c = adaptive.color(COLOR_LOW);
+        else if (false /*a.get_descriptor_rank() >= 5*/) // uncomment condition to enable highlighting high attributes
+            c = adaptive.color(COLOR_HIGH);
+        if (c.isValid()) {
+            attribute_name->setForeground(c);
+            attribute_rating->setForeground(c);
+            attribute_max->setForeground(c);
+            attribute_msg->setForeground(c);
         }
 
         ui->tw_attributes->setItem(0, 0, attribute_name);
