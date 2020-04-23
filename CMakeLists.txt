@@ -31,7 +31,6 @@ include(CPack)
 include(InstallRequiredSystemLibraries)
 include_directories(src ${CMAKE_BINARY_DIR}/src thirdparty/qtcolorpicker-2.6)
 
-set(EXE_NAME "DwarfTherapist")
 if(WIN32)
     add_definitions(-DUNICODE -D_UNICODE -DNOMINMAX)
     set(SOURCES ${SOURCES} DwarfTherapist.rc src/dfinstancewindows.cpp)
@@ -50,7 +49,6 @@ elseif(UNIX)
         set(MACOSX_BUNDLE_BUNDLE_VERSION "${DT_VERSION}")
     else() # Linux
         set(SOURCES ${SOURCES} src/dfinstancelinux.cpp)
-        set(EXE_NAME "dwarftherapist")
     endif()
 else()
     message(FATAL_ERROR "unsupported target")
@@ -67,7 +65,7 @@ if (BUILD_DEVMODE)
     install(CODE "message(FATAL_ERROR \"Cannot install when built with BUILD_DEVMODE\")")
 endif()
 
-add_executable(${EXE_NAME} WIN32 MACOSX_BUNDLE  
+add_executable(DwarfTherapist WIN32 MACOSX_BUNDLE
     src/aboutdialog.cpp
     src/activity.cpp
     src/activityevent.cpp
@@ -209,16 +207,20 @@ add_executable(${EXE_NAME} WIN32 MACOSX_BUNDLE
     thirdparty/qtcolorpicker-2.6/qtcolorpicker.cpp
     resources.qrc
     ${SOURCES})
-target_link_libraries(${EXE_NAME} Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Qml Qt5::Network Qt5::Concurrent ${LIBS})
-
-if (APPLE)
-    set_target_properties(${EXE_NAME} PROPERTIES
-        MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/osx/MacOSXBundleInfo.plist.in)
+target_link_libraries(DwarfTherapist Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Qml Qt5::Network Qt5::Concurrent ${LIBS})
+if(UNIX)
+    if(APPLE)
+        set_target_properties(DwarfTherapist PROPERTIES
+            MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/osx/MacOSXBundleInfo.plist.in)
+    else() # Linux
+        set_target_properties(DwarfTherapist PROPERTIES
+            OUTPUT_NAME "dwarftherapist")
+    endif()
 endif()
 
 if(UNIX AND NOT APPLE)
     # Installation is currently Linux-only
-    install(TARGETS ${EXE_NAME}
+    install(TARGETS DwarfTherapist
             RUNTIME DESTINATION bin)
     if (BUILD_PORTABLE)
         install(DIRECTORY share/
