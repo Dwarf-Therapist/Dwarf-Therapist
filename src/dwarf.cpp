@@ -98,14 +98,14 @@ Dwarf::Dwarf(DFInstance *df, VIRTADDR addr, QObject *parent)
     , m_hist_figure(0x0)
     , m_squad_id(-1)
     , m_squad_position(-1)
-    , m_pending_squad_name(QString::null)
+    , m_pending_squad_name()
     , m_age(0)
     , m_noble_position("")
     , m_is_pet(false)
     , m_race(0)
     , m_caste(0)
-    , m_pref_tooltip(QString::null)
-    , m_emotions_desc(QString::null)
+    , m_pref_tooltip()
+    , m_emotions_desc()
     , m_is_animal(false)
     , m_true_name("")
     , m_true_birth_year(0)
@@ -1048,7 +1048,7 @@ void Dwarf::read_syndromes(){
             }
         }
     }
-    //    qSort(m_syndromes.begin(),m_syndromes.end(),&Syndrome::sort_date_time);
+    //    std::sort(m_syndromes.begin(),m_syndromes.end(),&Syndrome::sort_date_time);
 }
 
 bool Dwarf::is_buffed(){
@@ -2820,7 +2820,7 @@ QString Dwarf::tooltip_text() {
                 }
             }
 
-            qSort(status_wound_summary);
+            std::sort(status_wound_summary.begin(), status_wound_summary.end());
             health_info.append(tr("<h4 style=\"margin:0;\"><b>%1:</b></h4><ul style=\"margin:0;\">%2</ul>").arg(tr("Health Issues")).arg(status_wound_summary.join(", ")));
         }
 
@@ -3149,9 +3149,9 @@ void Dwarf::refresh_role_display_ratings(){
         m_sorted_role_ratings.append(sr);
     }
     if(DT->user_settings()->value("options/show_custom_roles",false).toBool()){
-        qSort(m_sorted_role_ratings.begin(),m_sorted_role_ratings.end(),&Dwarf::sort_ratings_custom);
+        std::sort(m_sorted_role_ratings.begin(),m_sorted_role_ratings.end(),&Dwarf::sort_ratings_custom);
     }else{
-        qSort(m_sorted_role_ratings.begin(),m_sorted_role_ratings.end(),&Dwarf::sort_ratings);
+        std::sort(m_sorted_role_ratings.begin(),m_sorted_role_ratings.end(),&Dwarf::sort_ratings);
     }
 }
 

@@ -50,24 +50,24 @@ void StandardPaths::init_paths(Mode mode, QString source_datadir)
     if (!source_datadir.isEmpty())
         StandardPaths::source_datadir.setPath(source_datadir);
 
-    appdir = QCoreApplication::applicationDirPath();
+    appdir.setPath(QCoreApplication::applicationDirPath());
     switch (mode) {
     case Mode::Portable:
 #if (defined Q_OS_WIN)
-        custom_datadir = appdir.filePath("data");
+        custom_datadir.setPath(appdir.filePath("data"));
         custom_configdir = appdir;
 #elif (defined Q_OS_OSX)
-        custom_datadir = appdir.filePath("../Resources");
-        custom_configdir = appdir.filePath("../Resources");
+        custom_datadir.setPath(appdir.filePath("../Resources"));
+        custom_configdir.setPath(appdir.filePath("../Resources"));
 #elif (defined Q_OS_LINUX)
-        custom_datadir = appdir.filePath("../share");
-        custom_configdir = appdir.filePath("../etc");
+        custom_datadir.setPath(appdir.filePath("../share"));
+        custom_configdir.setPath(appdir.filePath("../etc"));
 #else
 #   error "Unsupported OS"
 #endif
         break;
     case Mode::Developer:
-        custom_datadir = appdir.filePath("share");
+        custom_datadir.setPath(appdir.filePath("share"));
         custom_configdir = appdir;
         break;
     default:

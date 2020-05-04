@@ -372,7 +372,7 @@ void Role::highlight_pref_matches(Dwarf *d, QString &pref_desc){
             }
 
             if(pref_names.count() > 0){
-                qSort(pref_names);
+                std::sort(pref_names.begin(), pref_names.end());
                 pref_desc.insert(pref_desc.lastIndexOf("</p>"),tr("<br/><b>Matches:</b> %1").arg(pref_names.join(", ")));
             }
         }

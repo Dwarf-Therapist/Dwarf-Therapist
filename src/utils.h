@@ -91,7 +91,7 @@ public:
         return static_cast<T*>(v.value<void *>());
     }
     static inline QVariant asQVariant(T* ptr){
-        return qVariantFromValue(static_cast<void*>(ptr));
+        return QVariant::fromValue(static_cast<void*>(ptr));
     }
 };
 

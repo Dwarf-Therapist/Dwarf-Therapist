@@ -69,7 +69,7 @@ bool MultiLabor::is_active(int labor_id) {
 void MultiLabor::labor_item_check_changed(QListWidgetItem *item) {
     m_internal_change_flag = true;
     if (item->checkState() == Qt::Checked) {
-        item->setBackgroundColor(m_active_labor_col);
+        item->setBackground(m_active_labor_col);
         add_labor(item->data(Qt::UserRole).toInt());
         if(!m_internal_change_flag)
             m_selected_count++;
@@ -87,14 +87,14 @@ void MultiLabor::load_labors(QListWidget *labor_list){
     m_selected_count = 0;
     read_settings();
     QList<Labor*> labors = gdr->get_ordered_labors();
-    qSort(labors.begin(),labors.end(),Labor::skilled_compare);
+    std::sort(labors.begin(),labors.end(),Labor::skilled_compare);
     foreach(Labor *l, labors) {
         QListWidgetItem *item = new QListWidgetItem(l->name, labor_list);
         item->setData(Qt::UserRole, l->labor_id);
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
         if (is_active(l->labor_id)) {
             item->setCheckState(Qt::Checked);
-            item->setBackgroundColor(m_active_labor_col);
+            item->setBackground(m_active_labor_col);
             m_selected_count++;
         } else {
             item->setCheckState(Qt::Unchecked);
