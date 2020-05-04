@@ -68,7 +68,7 @@ void GridViewDock::draw_views() {
             continue;
         view_names << v->name();
     }
-    qSort(view_names);
+    std::sort(view_names.begin(), view_names.end());
     foreach(QString name, view_names) {
         foreach(GridView *v, m_manager->views()) {
             if (v->name() == name) {

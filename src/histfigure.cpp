@@ -96,7 +96,7 @@ void HistFigure::read_kills(){
             m_other_kills.append(ki);
             m_total_kills_other += ki.count;
         }
-        qSort(m_other_kills.begin(),m_other_kills.end(),&HistFigure::sort_kill_count);
+        std::sort(m_other_kills.begin(),m_other_kills.end(),&HistFigure::sort_kill_count);
     }
     if(kill_events.count() > 0){
         foreach(quint32 evt_id, kill_events){
@@ -124,7 +124,7 @@ void HistFigure::read_kills(){
                 }
             }
         }
-        qSort(m_notable_kills.begin(),m_notable_kills.end(),&HistFigure::sort_kill_date);
+        std::sort(m_notable_kills.begin(),m_notable_kills.end(),&HistFigure::sort_kill_date);
     }
 }
 

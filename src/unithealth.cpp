@@ -80,7 +80,7 @@ UnitHealth::~UnitHealth(){
 void UnitHealth::sort_severity(QHash<eHealth::H_INFO, QList<HealthInfo*> > &hash) {
     foreach(const eHealth::H_INFO &info, hash.keys()){
         QList<HealthInfo*> &list = hash[info];
-        qSort(list.begin(), list.end(), HealthInfo::less_than_severity);
+        std::sort(list.begin(), list.end(), HealthInfo::less_than_severity);
     }
 }
 
@@ -563,7 +563,7 @@ QMap<QString, QStringList> UnitHealth::get_wound_summary(bool colored, bool symb
                     bp_summary.append(desc);
             }
             if(bp_summary.size() > 0){
-                qSort(bp_summary);
+                std::sort(bp_summary.begin(), bp_summary.end());
                 summary.insert(bp,bp_summary);
             }
         }
@@ -582,7 +582,7 @@ QStringList UnitHealth::get_treatment_summary(bool colored, bool symbols){
                 summary.append(hi->formatted_value(colored,symbols));
             }
         }
-        qSort(summary);
+        std::sort(summary.begin(), summary.end());
         m_treatment_summary.insert(key,summary);
     }
     return m_treatment_summary.value(key);
@@ -603,7 +603,7 @@ QStringList UnitHealth::get_status_summary(bool colored, bool symbols){
                 }
             }
         }
-        qSort(summary);
+        std::sort(summary.begin(), summary.end());
         m_status_summary.insert(key,summary);
     }
     return m_status_summary.value(key);
@@ -628,7 +628,7 @@ void UnitHealth::load_health_descriptors(QSettings &s){
         }
         s.endArray();
 
-        qSort(cat_names);
+        std::sort(cat_names.begin(), cat_names.end());
         foreach(QString name, cat_names) {
             foreach(eHealth::H_INFO id, m_health_descriptions.uniqueKeys()) {
                 if (m_health_descriptions.value(id)->name() == name) {

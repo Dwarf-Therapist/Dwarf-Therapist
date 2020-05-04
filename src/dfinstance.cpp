@@ -637,7 +637,7 @@ void DFInstance::load_role_ratings(){
         float min = 0;
         float median = 0;
         if(all_role_ratings.count() > 0){
-            qSort(all_role_ratings);
+            std::sort(all_role_ratings.begin(), all_role_ratings.end());
             role_rating_avg /= all_role_ratings.count();
             max = all_role_ratings.last();
             min = all_role_ratings.first();

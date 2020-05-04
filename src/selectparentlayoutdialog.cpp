@@ -13,7 +13,7 @@ SelectParentLayoutDialog::SelectParentLayoutDialog(DFInstance *df, QWidget *pare
 
     for (const auto &p: m_df->get_layouts()) {
         auto layout = p.second.get();
-        ui->cmb_select_layout->addItem(layout->game_version(), qVariantFromValue(layout));
+        ui->cmb_select_layout->addItem(layout->game_version(), QVariant::fromValue(layout));
     }
 
     ui->cmb_select_layout->model()->sort(0);
