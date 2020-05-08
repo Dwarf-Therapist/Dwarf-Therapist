@@ -1,3 +1,10 @@
+### Version 41.1.7 Patch Notes
+
+***
+ - added new skills for DF 0.47
+ - added new thoughts for DF 0.47
+ - removed the unused line edit below the tool bar
+
 ### Version 41.1.6 Patch Notes
 
 ***
