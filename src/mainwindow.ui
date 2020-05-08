@@ -56,9 +56,6 @@
      <widget class="QWidget" name="toolbar_placeholder" native="true">
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
-        <widget class="QLineEdit" name="lineEdit"/>
-       </item>
-       <item>
         <widget class="QLabel" name="lbl_group_by">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
@@ -318,7 +315,6 @@
       <zorder>lbl_dwarfs</zorder>
       <zorder>lbl_filter</zorder>
       <zorder>cb_filter_scripts</zorder>
-      <zorder>lineEdit</zorder>
      </widget>
     </item>
    </layout>
