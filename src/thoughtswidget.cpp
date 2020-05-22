@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include "thoughtsdock.h"
+#include "thoughtswidget.h"
 #include "dwarftherapist.h"
 #include "gamedatareader.h"
 #include "dfinstance.h"
@@ -32,15 +32,15 @@ THE SOFTWARE.
 
 #include <QPainter>
 
-ThoughtsDock::ThoughtsDock(QWidget *parent, Qt::WindowFlags flags)
-    : BaseTreeDock(tr("Emotions"),"dock_thoughts",true,parent,flags)
+ThoughtsWidget::ThoughtsWidget(QWidget *parent)
+    : BaseTreeWidget(true, parent)
 {
     m_tree_view->setColumnCount(3);
     m_tree_view->setHeaderLabels(QStringList() << tr("Thought/Emotion") << tr("Strength") << tr("Count"));
     m_tree_view->setItemDelegate(new ThoughtsItemDelegate(m_tree_view));
 }
 
-void ThoughtsDock::build_tree(){
+void ThoughtsWidget::build_tree(){
     QHash<int, EmotionGroup*> emotions = DT->get_DFInstance()->get_emotion_stats();
     QString tooltip;
     foreach(int id, emotions.uniqueKeys()){
@@ -128,7 +128,7 @@ void ThoughtsDock::build_tree(){
     m_tree_view->sortByColumn(2,Qt::DescendingOrder); //count
 }
 
-void ThoughtsDock::search_tree(QString val){
+void ThoughtsWidget::search_tree(QString val){
     val = "(" + val.replace(" ", "|") + ")";
     QRegExp filter = QRegExp(val,Qt::CaseInsensitive, QRegExp::RegExp);
     int hidden;
@@ -153,7 +153,7 @@ void ThoughtsDock::search_tree(QString val){
     }
 }
 
-void ThoughtsDock::selection_changed(){
+void ThoughtsWidget::selection_changed(){
     QVariantList ids; //dwarf ids
     foreach(QTreeWidgetItem *item, m_tree_view->selectedItems()){
         if(item->childCount() <= 0){

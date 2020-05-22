@@ -755,6 +755,102 @@
     <bool>true</bool>
    </attribute>
   </widget>
+  <widget class="QDockWidget" name="dock_skill_legend">
+   <property name="windowTitle">
+    <string>Skill Legend</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="SkillLegendWidget" name="skill_legend_widget"/>
+  </widget>
+  <widget class="QDockWidget" name="dock_dwarf_details">
+   <property name="windowTitle">
+    <string>Dwarf Details</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="DwarfDetailsWidget" name="dwarf_details_widget"/>
+  </widget>
+  <widget class="QDockWidget" name="dock_information">
+   <property name="windowTitle">
+    <string>Information</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="InformationWidget" name="information_widget"/>
+  </widget>
+  <widget class="QDockWidget" name="dock_preferences">
+   <property name="windowTitle">
+    <string>Preferences</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="PreferencesWidget" name="preferences_widget"/>
+  </widget>
+  <widget class="QDockWidget" name="dock_thoughts">
+   <property name="windowTitle">
+    <string>Emotions</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="ThoughtsWidget" name="thoughts_widget"/>
+  </widget>
+  <widget class="QDockWidget" name="dock_health_legend">
+   <property name="windowTitle">
+    <string>Health Legend</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="HealthLegendWidget" name="health_legend_widget"/>
+  </widget>
+  <widget class="QDockWidget" name="dock_equipmentoverview">
+   <property name="windowTitle">
+    <string>Equipment Overview</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="EquipmentOverviewWidget" name="equipment_overview_widget"/>
+  </widget>
+  <widget class="QDockWidget" name="dock_needs">
+   <property name="windowTitle">
+    <string>Needs</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="NeedsWidget" name="needs_widget"/>
+  </widget>
   <action name="act_connect_to_DF">
    <property name="icon">
     <iconset resource="../resources.qrc">
@@ -1199,6 +1295,54 @@
    <class>BaseDock</class>
    <extends>QDockWidget</extends>
    <header location="global">basedock.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SkillLegendWidget</class>
+   <extends>QWidget</extends>
+   <header>skilllegendwidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DwarfDetailsWidget</class>
+   <extends>QWidget</extends>
+   <header>dwarfdetailswidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>InformationWidget</class>
+   <extends>QWidget</extends>
+   <header>informationwidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PreferencesWidget</class>
+   <extends>QWidget</extends>
+   <header>preferenceswidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ThoughtsWidget</class>
+   <extends>QWidget</extends>
+   <header>thoughtswidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>HealthLegendWidget</class>
+   <extends>QWidget</extends>
+   <header>healthlegendwidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>EquipmentOverviewWidget</class>
+   <extends>QWidget</extends>
+   <header>equipmentoverviewwidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>NeedsWidget</class>
+   <extends>QWidget</extends>
+   <header>needswidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

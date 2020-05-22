@@ -20,33 +20,24 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef DWARF_DETAILS_H
-#define DWARF_DETAILS_H
+#ifndef INFORMATIONWIDGET_H
+#define INFORMATIONWIDGET_H
 
-#include "basedock.h"
+#include <QWidget>
 
-class Dwarf;
-class DwarfDetailsWidget;
-class QLabel;
+class QTextEdit;
 
-class DwarfDetailsDock : public BaseDock {
+class InformationWidget : public QWidget {
     Q_OBJECT
 public:
-    DwarfDetailsDock(QWidget *parent = 0, Qt::WindowFlags flags = 0);
-    int current_id() {return m_current_id;}
-    int last_id() {return m_last_id;}
+    InformationWidget(QWidget *parent = nullptr);
 
 public slots:
-    void show_dwarf(Dwarf *d);
-    void clear(bool reinit = true);
-    QByteArray get_ui_state();
+    void show_info(QString info);
+    void clear();
 
 private:
-    DwarfDetailsWidget *m_widget;
-    bool m_initialized;
-    QLabel *lbl_info;
-    int m_current_id;
-    int m_last_id;
-};
+    QTextEdit *te_info;
 
-#endif
+};
+#endif // INFORMATIONDOCK_H

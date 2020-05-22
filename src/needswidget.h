@@ -1,6 +1,6 @@
 /*
 Dwarf Therapist
-Copyright (c) 2009 Trey Stout (chmod)
+Copyright (c) 2018 Clément Vuchener
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,48 +20,56 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef THOUGHTSDOCK_H
-#define THOUGHTSDOCK_H
+#ifndef NEEDS_WIDGET_H
+#define NEEDS_WIDGET_H
 
-#include "basetreedock.h"
-#include <QString>
+#include <QStandardItemModel>
 #include <QStyledItemDelegate>
 
-class QPainter;
-class QStyleOptionViewItem;
-class QColor;
+#include <memory>
 
-class ThoughtsDock : public BaseTreeDock {
+namespace Ui { class NeedsWidget; }
+
+class NeedsDelegate;
+
+class NeedsWidget: public QWidget
+{
     Q_OBJECT
 public:
-    ThoughtsDock(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    NeedsWidget(QWidget *parent = nullptr);
+    virtual ~NeedsWidget();
 
-protected:
-    void search_tree(QString val);
-    void build_tree();
-
-protected slots:
-    void selection_changed();
+public slots:
+    void clear();
+    void refresh();
 
 signals:
-    void item_selected(QVariantList);
+    void focus_selected(QVariantList);
+    void need_selected(QVariantList, bool match_all);
 
+private slots:
+    void focus_selection_changed();
+    void need_selection_changed();
+
+private:
+    std::unique_ptr<Ui::NeedsWidget> ui;
+    std::unique_ptr<NeedsDelegate> m_focus_delegate;
+    std::unique_ptr<NeedsDelegate> m_needs_delegate;
+    QStandardItemModel m_focus_model;
+    QStandardItemModel m_needs_model;
 };
 
-class ThoughtsItemDelegate : public QStyledItemDelegate {
+class NeedsDelegate: public QStyledItemDelegate
+{
     Q_OBJECT
 public:
+    NeedsDelegate(const QList<QColor> &colors, QObject *parent = nullptr);
+    virtual ~NeedsDelegate();
 
-    ThoughtsItemDelegate(QObject *parent = 0)
-        : QStyledItemDelegate(parent)
-    {
-    }
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 
-    void paint(QPainter *painter, const QStyleOptionViewItem &option,const QModelIndex &index) const;
-
-protected:
-    QString appendText(QPainter *painter, const QStyleOptionViewItem &option, QColor text_color, QString curr_text, QString text) const;
-    QString prependText(QPainter *painter, const QStyleOptionViewItem &option, QColor text_color, QString curr_text, QString text) const;
+private:
+    QList<QColor> m_colors;
 };
 
-#endif // THOUGHTSDOCK_H
+#endif

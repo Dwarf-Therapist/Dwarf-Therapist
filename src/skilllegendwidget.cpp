@@ -20,7 +20,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#include "skilllegenddock.h"
+#include "skilllegendwidget.h"
 #include "statetableview.h"
 #include "gamedatareader.h"
 #include "dwarfmodel.h"
@@ -36,14 +36,11 @@ THE SOFTWARE.
 #include <QComboBox>
 #include <QLabel>
 
-SkillLegendDock::SkillLegendDock(QWidget *parent, Qt::WindowFlags flags)
-    : BaseDock(parent, flags)
+SkillLegendWidget::SkillLegendWidget(QWidget *parent)
+    : QWidget(parent)
 {
-    setObjectName("dock_skill_legend");
-    setWindowTitle(tr("Skill Legend"));
-    QWidget *main_widget = new QWidget(this);
-        QVBoxLayout *layout = new QVBoxLayout(main_widget);
-    main_widget->setLayout(layout);
+    QVBoxLayout *layout = new QVBoxLayout(this);
+    setLayout(layout);
 
     QHBoxLayout *l_type = new QHBoxLayout();
     QLabel *lbl_type = new QLabel(this);
@@ -61,7 +58,6 @@ SkillLegendDock::SkillLegendDock(QWidget *parent, Qt::WindowFlags flags)
     stv->setContextMenuPolicy(Qt::ActionsContextMenu);
 
     layout->addWidget(stv);
-    setWidget(main_widget);
 
     QStandardItemModel *m = new QStandardItemModel(this);
     stv->setModel(m);
@@ -99,7 +95,7 @@ SkillLegendDock::SkillLegendDock(QWidget *parent, Qt::WindowFlags flags)
         DT->get_options_menu(), SLOT(set_skill_drawing_method(const UberDelegate::SKILL_DRAWING_METHOD&)));
 }
 
-void SkillLegendDock::set_SDM(int idx){
+void SkillLegendWidget::set_SDM(int idx){
     QComboBox *c = qobject_cast<QComboBox*>(QObject::sender());
     UberDelegate::SKILL_DRAWING_METHOD sdm = static_cast<UberDelegate::SKILL_DRAWING_METHOD>(c->itemData(idx, Qt::UserRole).toInt());
     if(sdm != m_current_method){

@@ -32,6 +32,8 @@ THE SOFTWARE.
 
 class Dwarf;
 class QTableWidget;
+class QSettings;
+class QMainWindow;
 
 namespace Ui {
     class DwarfDetailsWidget;
@@ -43,6 +45,10 @@ public:
     DwarfDetailsWidget(QWidget *parent = 0, Qt::WindowFlags flags = 0);
     ~DwarfDetailsWidget();
 
+    int saved_id() const { return m_saved_id; }
+
+    void save_state(QSettings &) const;
+
 public slots:
     void clear();
     void show_dwarf(Dwarf *d);
@@ -50,10 +56,11 @@ public slots:
 private:
     Ui::DwarfDetailsWidget *ui;
     QVector<QTableWidget*> m_tables;
-    QByteArray m_ui_state;
+    QMainWindow *m_dock_area;
 
     QList<QPair<int,Qt::SortOrder> > m_sorting;
     int m_current_id;
+    int m_saved_id;
 
     void clear_table(QTableWidget &t);
     QString label_gradient(QColor c1, QColor c2);

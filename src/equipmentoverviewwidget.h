@@ -20,42 +20,54 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef PREFERENCES_DOCK_H
-#define PREFERENCES_DOCK_H
+#ifndef EQUIPMENTOVERVIEWWIDGET_H
+#define EQUIPMENTOVERVIEWWIDGET_H
 
-#include "basedock.h"
+#include "basetreewidget.h"
 
-#include <QRegExp>
+#include <QStyledItemDelegate>
 
-class QTableWidget;
+class QLabel;
+class QPainter;
 
-class PreferencesDock : public BaseDock {
+class EquipmentOverviewWidget : public BaseTreeWidget {
     Q_OBJECT
 public:
-    PreferencesDock(QWidget *parent = 0, Qt::WindowFlags flags = 0);
-
-    void filter();
+    EquipmentOverviewWidget(QWidget *parent = nullptr);
 
 protected:
-    QTableWidget *tw_prefs;
-    QRegExp m_filter;
+    QLabel *lbl_read;
+    void search_tree(QString val);
+    void build_tree();
 
 public slots:
-    //void cell_clicked(int r,int c);
-    void clear_filter();
-    void clear_search();
-    void search_changed(QString);
+    void check_changed(bool);
     void selection_changed();
-    void clear();
-    void refresh();
 
 signals:
-    void item_selected(QList<QPair<QString,QString> >);
+    void item_selected(QVariantList);
 
 private:
-    void closeEvent(QCloseEvent *event);
+    bool m_option_state;
+    static QString m_option_name;
+    QHash<int,QString> m_wear_level_desc;
 
 };
 
-#endif // PREFERENCES_DOCK_H
+class EquipWarnItemDelegate : public QStyledItemDelegate {
+    Q_OBJECT
+public:
 
+    EquipWarnItemDelegate(QObject *parent = 0)
+        : QStyledItemDelegate(parent)
+    {
+    }
+
+    void paint(QPainter *painter, const QStyleOptionViewItem &option,const QModelIndex &index) const;
+
+protected:
+    QString appendText(QPainter *painter, const QStyleOptionViewItem &option, QColor text_color, QString curr_text, QString text) const;
+    QString prependText(QPainter *painter, const QStyleOptionViewItem &option, QColor text_color, QString curr_text, QString text) const;
+};
+
+#endif // EQUIPMENTOVERVIEWDOCK_H

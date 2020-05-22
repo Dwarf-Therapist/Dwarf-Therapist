@@ -45,6 +45,7 @@ class Updater;
 class ViewManager;
 class optimizereditor;
 class RoleDialog;
+class GridViewWidget;
 
 namespace Ui
 {
@@ -176,6 +177,7 @@ private:
     pop_info m_pop_info;
     bool m_toolbar_configured;
     QVector<int> m_selected_units;
+    GridViewWidget *m_grid_view_widget;
 
     //optimize button and separator widgets and their corresponding toolbar actions
     QAction *m_act_sep_optimize;
