@@ -21,18 +21,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include "healthlegenddock.h"
+#include "healthlegendwidget.h"
 #include "healthcategory.h"
 #include "unithealth.h"
 
-HealthLegendDock::HealthLegendDock(QWidget *parent, Qt::WindowFlags flags)
-    : BaseTreeDock(tr("Health Legend"),"dock_health_legend",false,parent, flags)
+HealthLegendWidget::HealthLegendWidget(QWidget *parent)
+    : BaseTreeWidget(false, parent)
 {
     m_tree_view->setColumnCount(2);
     m_tree_view->setHeaderLabels(QStringList() << tr("Title/Abbrev") << tr("Description"));
 }
 
-void HealthLegendDock::build_tree(){
+void HealthLegendWidget::build_tree(){
     foreach(HealthCategory *hc, UnitHealth::get_display_categories().values()){
         if(hc->id() < 0)
             continue;
@@ -61,7 +61,7 @@ void HealthLegendDock::build_tree(){
     m_tree_view->sortItems(0,Qt::AscendingOrder);
 }
 
-void HealthLegendDock::search_tree(QString val){
+void HealthLegendWidget::search_tree(QString val){
     val = "(" + val.replace(" ", "|") + ")";
     QRegExp filter = QRegExp(val,Qt::CaseInsensitive, QRegExp::RegExp);
     int hidden;
@@ -86,7 +86,7 @@ void HealthLegendDock::search_tree(QString val){
     }
 }
 
-void HealthLegendDock::selection_changed(){
+void HealthLegendWidget::selection_changed(){
     QList<QPair<int,int> > values; //pairs of id and display index
     foreach(QTreeWidgetItem *item, m_tree_view->selectedItems()){
         int id = 0;

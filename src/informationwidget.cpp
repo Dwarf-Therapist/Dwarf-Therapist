@@ -21,22 +21,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include "informationdock.h"
+#include "informationwidget.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QApplication>
 #include <QTextEdit>
 
-InformationDock::InformationDock(QWidget *parent, Qt::WindowFlags flags)
-    : BaseDock(parent, flags)
+InformationWidget::InformationWidget(QWidget *parent)
+    : QWidget(parent)
     , te_info(new QTextEdit(this))
 {
-    setObjectName("dock_information");
-    setWindowTitle(tr("Information"));
-    QWidget *main_widget = new QWidget(this);
-    QVBoxLayout *layout = new QVBoxLayout(main_widget);
-    main_widget->setLayout(layout);
+    QVBoxLayout *layout = new QVBoxLayout(this);
+    setLayout(layout);
 
     QHBoxLayout *l_type = new QHBoxLayout();
     te_info->setReadOnly(true);
@@ -47,11 +44,9 @@ InformationDock::InformationDock(QWidget *parent, Qt::WindowFlags flags)
     l_info->setText(tr("Hold CTRL to lock the current information."));
     l_info->setAlignment(Qt::AlignCenter);
     layout->addWidget(l_info);
-
-    setWidget(main_widget);
 }
 
-void InformationDock::show_info(QString info){
+void InformationWidget::show_info(QString info){
     if(!(QApplication::queryKeyboardModifiers() & Qt::ControlModifier)){
         te_info->setText(info);
         te_info->moveCursor(QTextCursor::Start);
@@ -59,6 +54,6 @@ void InformationDock::show_info(QString info){
     }
 }
 
-void InformationDock::clear(){
+void InformationWidget::clear(){
     te_info->clear();
 }

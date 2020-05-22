@@ -20,26 +20,44 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef SKILL_LEGEND_DOCK_H
-#define SKILL_LEGEND_DOCK_H
+#ifndef GRID_VIEW_WIDGET_H
+#define GRID_VIEW_WIDGET_H
 
-#include "basedock.h"
-#include "uberdelegate.h"
+#include <QWidget>
 
-class SkillLegendDock : public BaseDock {
-	Q_OBJECT
+class ViewManager;
+class QListWidgetItem;
+class RolePreferenceModel;
+
+namespace Ui {
+    class GridViewWidget;
+}
+
+class GridViewWidget: public QWidget {
+    Q_OBJECT
 public:
-	SkillLegendDock(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    GridViewWidget(ViewManager *mgr, RolePreferenceModel *pref_model, QWidget *parent = nullptr);
+    ~GridViewWidget();
+    void draw_views();
 
-	public slots:		
-        void set_SDM(int idx);
-
-signals:
-	void change_skill_drawing_method(const UberDelegate::SKILL_DRAWING_METHOD&);
+    public slots:
+        void add_new_view();
+        void draw_list_context_menu(const QPoint &pos);
 
 private:
-    UberDelegate::SKILL_DRAWING_METHOD m_current_method;
+    ViewManager *m_manager;
+    Ui::GridViewWidget *ui;
+    QListWidgetItem *m_tmp_item;
+    RolePreferenceModel *m_pref_model;
 
+    short current_view_is_custom();
+
+    private slots:
+        void edit_view();
+        void edit_view(QListWidgetItem*);
+        void copy_view();
+        void delete_view();
+        void item_clicked(QListWidgetItem*);
 };
 
 #endif

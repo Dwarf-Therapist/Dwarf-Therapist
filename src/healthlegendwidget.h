@@ -20,44 +20,24 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef GRID_VIEW_DOCK_H
-#define GRID_VIEW_DOCK_H
+#ifndef HEALTHLEGENDWIDGET_H
+#define HEALTHLEGENDWIDGET_H
 
-#include "basedock.h"
+#include "basetreewidget.h"
 
-class ViewManager;
-class QListWidgetItem;
-class RolePreferenceModel;
-
-namespace Ui {
-    class GridViewDock;
-}
-
-class GridViewDock : public BaseDock {
+class HealthLegendWidget : public BaseTreeWidget {
     Q_OBJECT
 public:
-    GridViewDock(ViewManager *mgr, RolePreferenceModel *pref_model, QWidget *parent = 0, Qt::WindowFlags flags = 0);
-    ~GridViewDock();
-    void draw_views();
+    HealthLegendWidget(QWidget *parent = nullptr);
+protected:
+    void search_tree(QString val);
+    void build_tree();
 
-    public slots:
-        void add_new_view();
-        void draw_list_context_menu(const QPoint &pos);
+protected slots:
+    void selection_changed();
 
-private:
-    ViewManager *m_manager;
-    Ui::GridViewDock *ui;
-    QListWidgetItem *m_tmp_item;
-    RolePreferenceModel *m_pref_model;
-
-    short current_view_is_custom();
-
-    private slots:
-        void edit_view();
-        void edit_view(QListWidgetItem*);
-        void copy_view();
-        void delete_view();
-        void item_clicked(QListWidgetItem*);
+signals:
+    void item_selected(QList<QPair<int, int> >);
 };
 
-#endif
+#endif // HEALTHLEGENDDOCK_H

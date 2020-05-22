@@ -20,24 +20,25 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef HEALTHLEGENDDOCK_H
-#define HEALTHLEGENDDOCK_H
+#ifndef SKILL_LEGEND_WIDGET_H
+#define SKILL_LEGEND_WIDGET_H
 
-#include "basetreedock.h"
+#include "uberdelegate.h"
 
-class HealthLegendDock : public BaseTreeDock {
-    Q_OBJECT
+class SkillLegendWidget : public QWidget {
+	Q_OBJECT
 public:
-    HealthLegendDock(QWidget *parent = 0, Qt::WindowFlags flags = 0);
-protected:
-    void search_tree(QString val);
-    void build_tree();
+	SkillLegendWidget(QWidget *parent = nullptr);
 
-protected slots:
-    void selection_changed();
+public slots:
+    void set_SDM(int idx);
 
 signals:
-    void item_selected(QList<QPair<int, int> >);
+	void change_skill_drawing_method(const UberDelegate::SKILL_DRAWING_METHOD&);
+
+private:
+    UberDelegate::SKILL_DRAWING_METHOD m_current_method;
+
 };
 
-#endif // HEALTHLEGENDDOCK_H
+#endif

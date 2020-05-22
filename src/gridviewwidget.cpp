@@ -22,24 +22,21 @@ THE SOFTWARE.
 */
 #include <QMessageBox>
 #include <QMenu>
-#include "gridviewdock.h"
-#include "ui_gridviewdock.h"
+#include "gridviewwidget.h"
+#include "ui_gridviewwidget.h"
 #include "viewmanager.h"
 #include "gridview.h"
 #include "gridviewdialog.h"
 #include "truncatingfilelogger.h"
 
-GridViewDock::GridViewDock(ViewManager *mgr, RolePreferenceModel *pref_model,
-                           QWidget *parent, Qt::WindowFlags flags)
-    : BaseDock(parent, flags)
+GridViewWidget::GridViewWidget(ViewManager *mgr, RolePreferenceModel *pref_model, QWidget *parent)
+    : QWidget(parent)
     , m_manager(mgr)
-    , ui(new Ui::GridViewDock)
+    , ui(new Ui::GridViewWidget)
     , m_tmp_item(0)
     , m_pref_model(pref_model)
 {
     ui->setupUi(this);
-    setFeatures(QDockWidget::AllDockWidgetFeatures);
-    setAllowedAreas(Qt::AllDockWidgetAreas);
     draw_views();
 
     connect(ui->list_views,SIGNAL(itemClicked(QListWidgetItem*)),this,SLOT(item_clicked(QListWidgetItem*)));
@@ -55,11 +52,11 @@ GridViewDock::GridViewDock(ViewManager *mgr, RolePreferenceModel *pref_model,
     connect(ui->btn_copy,SIGNAL(clicked()),this,SLOT(copy_view()));
 }
 
-GridViewDock::~GridViewDock() {
+GridViewWidget::~GridViewWidget() {
     delete ui;
 }
 
-void GridViewDock::draw_views() {
+void GridViewWidget::draw_views() {
     ui->list_views->clear();
     QStringList view_names;
     foreach(GridView *v, m_manager->views()) {
@@ -82,7 +79,7 @@ void GridViewDock::draw_views() {
     }
 }
 
-void GridViewDock::item_clicked(QListWidgetItem *item){
+void GridViewWidget::item_clicked(QListWidgetItem *item){
     m_tmp_item = item;
     if((bool)current_view_is_custom()){
         ui->btn_copy->setEnabled(true);
@@ -95,7 +92,7 @@ void GridViewDock::item_clicked(QListWidgetItem *item){
     }
 }
 
-void GridViewDock::draw_list_context_menu(const QPoint &pos) {
+void GridViewWidget::draw_list_context_menu(const QPoint &pos) {
     m_tmp_item = ui->list_views->itemAt(pos);
     QMenu m(this);
     short res = current_view_is_custom();
@@ -116,7 +113,7 @@ void GridViewDock::draw_list_context_menu(const QPoint &pos) {
     m.exec(ui->list_views->mapToGlobal(pos));
 }
 
-short GridViewDock::current_view_is_custom(){
+short GridViewWidget::current_view_is_custom(){
     QString item_text;
     if (m_tmp_item)
         item_text = m_tmp_item->text();
@@ -129,7 +126,7 @@ short GridViewDock::current_view_is_custom(){
     }
 }
 
-void GridViewDock::add_new_view() {
+void GridViewWidget::add_new_view() {
     GridView *view = new GridView("", m_manager);
     GridViewDialog *d = new GridViewDialog(m_manager, view, m_pref_model, this);
     int accepted = d->exec();
@@ -141,12 +138,12 @@ void GridViewDock::add_new_view() {
     }
 }
 
-void GridViewDock::edit_view(QListWidgetItem *item) {
+void GridViewWidget::edit_view(QListWidgetItem *item) {
     m_tmp_item = item;
     edit_view();
 }
 
-void GridViewDock::edit_view() {
+void GridViewWidget::edit_view() {
     if (!m_tmp_item)
         return;
 
@@ -165,7 +162,7 @@ void GridViewDock::edit_view() {
     m_tmp_item = 0;
 }
 
-void GridViewDock::copy_view() {
+void GridViewWidget::copy_view() {
     if (!m_tmp_item)
         return;
 
@@ -182,7 +179,7 @@ void GridViewDock::copy_view() {
     m_tmp_item = 0;
 }
 
-void GridViewDock::delete_view() {
+void GridViewWidget::delete_view() {
     if (!m_tmp_item)
         return;
     GridView *view = m_manager->get_view(m_tmp_item->text());

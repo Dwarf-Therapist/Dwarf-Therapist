@@ -21,8 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include "needsdock.h"
-#include "ui_needsdock.h"
+#include "needswidget.h"
+#include "ui_needswidget.h"
 
 #include <QPainter>
 
@@ -32,7 +32,7 @@ THE SOFTWARE.
 #include "histfigure.h"
 #include "unitneed.h"
 
-enum NeedsDockRole
+enum NeedsWidgetRole
 {
     ListRole = Qt::UserRole+1,
     SortRole,
@@ -41,9 +41,9 @@ enum NeedsDockRole
     DegreeRole,
 };
 
-NeedsDock::NeedsDock(QWidget *parent, Qt::WindowFlags flags)
-    : BaseDock(parent, flags)
-    , ui(std::make_unique<Ui::NeedsDock>())
+NeedsWidget::NeedsWidget(QWidget *parent)
+    : QWidget(parent)
+    , ui(std::make_unique<Ui::NeedsWidget>())
 {
     ui->setupUi(this);
 
@@ -83,11 +83,11 @@ NeedsDock::NeedsDock(QWidget *parent, Qt::WindowFlags flags)
     }
 }
 
-NeedsDock::~NeedsDock()
+NeedsWidget::~NeedsWidget()
 {
 }
 
-void NeedsDock::clear()
+void NeedsWidget::clear()
 {
     m_focus_model.clear();
     m_focus_model.setHorizontalHeaderLabels({tr("Focus"), tr("Count")});
@@ -95,7 +95,7 @@ void NeedsDock::clear()
     m_needs_model.setHorizontalHeaderLabels({tr("Need"), tr("Count")});
 }
 
-void NeedsDock::refresh()
+void NeedsWidget::refresh()
 {
     clear();
     if (!DT)
@@ -226,7 +226,7 @@ void NeedsDock::refresh()
     }
 }
 
-void NeedsDock::focus_selection_changed()
+void NeedsWidget::focus_selection_changed()
 {
     QVariantList list;
     for (const auto &index: ui->focus_view->selectionModel()->selection().indexes()) {
@@ -237,7 +237,7 @@ void NeedsDock::focus_selection_changed()
     emit focus_selected(list);
 }
 
-void NeedsDock::need_selection_changed()
+void NeedsWidget::need_selection_changed()
 {
     QVariantList list;
     for (const auto &index: ui->need_view->get_selection().indexes()) {

@@ -20,7 +20,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#include "preferencesdock.h"
+#include "preferenceswidget.h"
 #include "dwarftherapist.h"
 #include "dfinstance.h"
 
@@ -32,17 +32,11 @@ THE SOFTWARE.
 #include <QTableWidget>
 #include <QVBoxLayout>
 
-PreferencesDock::PreferencesDock(QWidget *parent, Qt::WindowFlags flags)
-    : BaseDock(parent, flags)
+PreferencesWidget::PreferencesWidget(QWidget *parent)
+    : QWidget(parent)
 {
-    setWindowTitle(tr("Preferences"));
-    setObjectName("dock_preferences");
-    setFeatures(QDockWidget::AllDockWidgetFeatures);
-    setAllowedAreas(Qt::AllDockWidgetAreas);
-
-    QWidget *w = new QWidget();
     QVBoxLayout *l = new QVBoxLayout();
-    w->setLayout(l);
+    setLayout(l);
 
     // PREFERENCES TABLE
     tw_prefs = new QTableWidget(this);
@@ -77,10 +71,8 @@ PreferencesDock::PreferencesDock(QWidget *parent, Qt::WindowFlags flags)
     l->addLayout(s);
 
     QPushButton *btn = new QPushButton("Clear Filter",this);
-    w->layout()->addWidget(tw_prefs);
-    w->layout()->addWidget(btn);
-
-    setWidget(w);
+    l->addWidget(tw_prefs);
+    l->addWidget(btn);
 
     connect(tw_prefs,SIGNAL(itemSelectionChanged()),this,SLOT(selection_changed()));
     connect(btn, SIGNAL(clicked()),this,SLOT(clear_filter()));
@@ -90,14 +82,14 @@ PreferencesDock::PreferencesDock(QWidget *parent, Qt::WindowFlags flags)
     connect(DT,SIGNAL(units_refreshed()),this,SLOT(refresh()));
 }
 
-void PreferencesDock::clear(){
+void PreferencesWidget::clear(){
     for(int r = tw_prefs->rowCount(); r >=0; r--){
         tw_prefs->removeRow(r);
     }
     tw_prefs->clearContents();
 }
 
-void PreferencesDock::refresh(){
+void PreferencesWidget::refresh(){
     clear();
 
     if(DT && DT->get_DFInstance()){
@@ -141,7 +133,7 @@ void PreferencesDock::refresh(){
     }
 }
 
-void PreferencesDock::selection_changed(){
+void PreferencesWidget::selection_changed(){
     //pairs of category and preference
     QList<QPair<QString,QString> > values;
     QModelIndexList indexList = tw_prefs->selectionModel()->selectedIndexes();
@@ -160,13 +152,13 @@ void PreferencesDock::selection_changed(){
     emit item_selected(values);
 }
 
-void PreferencesDock::search_changed(QString val){
+void PreferencesWidget::search_changed(QString val){
     val = "(" + val.replace(" ", "|") + ")";
     m_filter = QRegExp(val,Qt::CaseInsensitive, QRegExp::RegExp);
     filter();
 }
 
-void PreferencesDock::filter(){
+void PreferencesWidget::filter(){
     for(int i = 0; i < tw_prefs->rowCount(); i++){
         if(m_filter.isEmpty() || tw_prefs->item(i,0)->text().contains(m_filter) || tw_prefs->item(i,3)->text().contains(m_filter)){
             tw_prefs->setRowHidden(i,false);
@@ -176,17 +168,17 @@ void PreferencesDock::filter(){
     }
 }
 
-void PreferencesDock::clear_filter(){
+void PreferencesWidget::clear_filter(){
     tw_prefs->clearSelection();
 }
 
-void PreferencesDock::clear_search(){
+void PreferencesWidget::clear_search(){
     QLineEdit *s = qobject_cast<QLineEdit*>(QObject::findChild<QLineEdit*>("le_search"));
     if(s)
         s->setText("");
 }
 
-void PreferencesDock::closeEvent(QCloseEvent *event){
+void PreferencesWidget::closeEvent(QCloseEvent *event){
     clear_search();
     clear_filter();
     event->accept();

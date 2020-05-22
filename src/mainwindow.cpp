@@ -47,17 +47,11 @@ THE SOFTWARE.
 #include "laboroptimizerplan.h"
 #include "optimizereditor.h"
 #include "gamedatareader.h"
-#include "thoughtsdock.h"
 #include "preference.h"
 #include "dfinstance.h"
 #include "squad.h"
-#include "gridviewdock.h"
-#include "skilllegenddock.h"
-#include "dwarfdetailsdock.h"
-#include "informationdock.h"
-#include "preferencesdock.h"
-#include "healthlegenddock.h"
-#include "equipmentoverviewdock.h"
+#include "gridviewwidget.h"
+#include "dwarfdetailswidget.h"
 #include "eventfilterlineedit.h"
 #include "gridview.h"
 #include "notifierwidget.h"
@@ -65,7 +59,6 @@ THE SOFTWARE.
 #include "standardpaths.h"
 #include "rolepreferencemodel.h"
 #include "defaultroleweight.h"
-#include "needsdock.h"
 
 #include <QCompleter>
 #include <QDesktopServices>
@@ -114,62 +107,25 @@ MainWindow::MainWindow(QWidget *parent)
     setTabPosition(Qt::AllDockWidgetAreas, QTabWidget::North);
 
     /* docks! */
-    GridViewDock *grid_view_dock = new GridViewDock(m_view_manager, m_pref_model, this);
-    grid_view_dock->setHidden(true); // hide by default
-    grid_view_dock->setFloating(false);
-    addDockWidget(Qt::RightDockWidgetArea, grid_view_dock);
-
-    SkillLegendDock *skill_legend_dock = new SkillLegendDock(this);
-    skill_legend_dock->setHidden(true); // hide by default
-    skill_legend_dock->setFloating(false);
-    addDockWidget(Qt::RightDockWidgetArea, skill_legend_dock);
-
-    DwarfDetailsDock *dwarf_details_dock = new DwarfDetailsDock(this);
-    dwarf_details_dock->setHidden(true);
-    dwarf_details_dock->setFloating(false);
-    addDockWidget(Qt::RightDockWidgetArea, dwarf_details_dock);
-
-    InformationDock *info_dock = new InformationDock(this);
-    info_dock->setHidden(true);
-    info_dock->setFloating(false);
-    addDockWidget(Qt::RightDockWidgetArea, info_dock);
-
-    PreferencesDock *pref_dock = new PreferencesDock(this);
-    pref_dock->setHidden(true);
-    pref_dock->setFloating(false);
-    addDockWidget(Qt::RightDockWidgetArea, pref_dock);
-
-    ThoughtsDock *thought_dock = new ThoughtsDock(this);
-    thought_dock->setHidden(true);
-    thought_dock->setFloating(false);
-    addDockWidget(Qt::RightDockWidgetArea, thought_dock);
-
-    HealthLegendDock *health_dock = new HealthLegendDock(this);
-    health_dock->setHidden(true);
-    health_dock->setFloating(false);
-    addDockWidget(Qt::RightDockWidgetArea, health_dock);
-
-    EquipmentOverviewDock *equipoverview_dock = new EquipmentOverviewDock(this);
-    equipoverview_dock->setHidden(true);
-    equipoverview_dock->setFloating(false);
-    addDockWidget(Qt::RightDockWidgetArea, equipoverview_dock);
-
-    NeedsDock *needs_dock = new NeedsDock(this);
-    needs_dock->setHidden(true);
-    needs_dock->setFloating(false);
-    addDockWidget(Qt::RightDockWidgetArea, needs_dock);
+    auto dock_grid_view = new QDockWidget(this);
+    dock_grid_view->setObjectName("dock_grid_view");
+    dock_grid_view->setVisible(false);
+    dock_grid_view->setWindowTitle(tr("Grid Views"));
+    m_grid_view_widget = new GridViewWidget(m_view_manager, m_pref_model);
+    dock_grid_view->setWidget(m_grid_view_widget);
+    addDockWidget(Qt::RightDockWidgetArea, dock_grid_view);
 
     ui->menu_docks->addAction(ui->dock_pending_jobs_list->toggleViewAction());
     ui->menu_docks->addAction(ui->dock_custom_professions->toggleViewAction());
-    ui->menu_docks->addAction(grid_view_dock->toggleViewAction());
-    ui->menu_docks->addAction(skill_legend_dock->toggleViewAction());
-    ui->menu_docks->addAction(info_dock->toggleViewAction());
-    ui->menu_docks->addAction(dwarf_details_dock->toggleViewAction());
-    ui->menu_docks->addAction(pref_dock->toggleViewAction());
-    ui->menu_docks->addAction(thought_dock->toggleViewAction());
-    ui->menu_docks->addAction(health_dock->toggleViewAction());
-    ui->menu_docks->addAction(equipoverview_dock->toggleViewAction());
-    ui->menu_docks->addAction(needs_dock->toggleViewAction());
+    ui->menu_docks->addAction(dock_grid_view->toggleViewAction());
+    ui->menu_docks->addAction(ui->dock_skill_legend->toggleViewAction());
+    ui->menu_docks->addAction(ui->dock_information->toggleViewAction());
+    ui->menu_docks->addAction(ui->dock_dwarf_details->toggleViewAction());
+    ui->menu_docks->addAction(ui->dock_preferences->toggleViewAction());
+    ui->menu_docks->addAction(ui->dock_thoughts->toggleViewAction());
+    ui->menu_docks->addAction(ui->dock_health_legend->toggleViewAction());
+    ui->menu_docks->addAction(ui->dock_equipmentoverview->toggleViewAction());
+    ui->menu_docks->addAction(ui->dock_needs->toggleViewAction());
 
     ui->menuWindows->addAction(ui->main_toolbar->toggleViewAction());
 
@@ -190,9 +146,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->tree_custom_professions,SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)),
             m_view_manager, SLOT(jump_to_profession(QTreeWidgetItem*,QTreeWidgetItem*)));
 
-    connect(m_view_manager, SIGNAL(dwarf_focus_changed(Dwarf*)), dwarf_details_dock, SLOT(show_dwarf(Dwarf*)));
+    connect(m_view_manager, SIGNAL(dwarf_focus_changed(Dwarf*)), ui->dwarf_details_widget, SLOT(show_dwarf(Dwarf*)));
 
-    connect(m_proxy, SIGNAL(show_tooltip(QString)),info_dock,SLOT(show_info(QString)));
+    connect(m_proxy, SIGNAL(show_tooltip(QString)),ui->information_widget,SLOT(show_info(QString)));
 
     connect(m_view_manager, SIGNAL(selection_changed()), this, SLOT(toggle_opts_menu()));
 
@@ -203,25 +159,25 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(m_view_manager,SIGNAL(group_changed(int)), this, SLOT(display_group(int)));
 
-    connect(pref_dock,SIGNAL(item_selected(QList<QPair<QString,QString> >)),
+    connect(ui->preferences_widget,SIGNAL(item_selected(QList<QPair<QString,QString> >)),
             this,SLOT(preference_selected(QList<QPair<QString,QString> >)));
-    connect(thought_dock, SIGNAL(item_selected(QVariantList)),
+    connect(ui->thoughts_widget, SIGNAL(item_selected(QVariantList)),
             this, SLOT(thought_selected(QVariantList)));
-    connect(health_dock, SIGNAL(item_selected(QList<QPair<int,int> >)),
+    connect(ui->health_legend_widget, SIGNAL(item_selected(QList<QPair<int,int> >)),
             this, SLOT(health_legend_selected(QList<QPair<int,int> >)));
-    connect(equipoverview_dock, SIGNAL(item_selected(QVariantList)),
+    connect(ui->equipment_overview_widget, SIGNAL(item_selected(QVariantList)),
             this, SLOT(equipoverview_selected(QVariantList)));
-    connect(needs_dock, SIGNAL(focus_selected(QVariantList)),
+    connect(ui->needs_widget, SIGNAL(focus_selected(QVariantList)),
             this, SLOT(focus_selected(QVariantList)));
-    connect(needs_dock, SIGNAL(need_selected(QVariantList, bool)),
+    connect(ui->needs_widget, SIGNAL(need_selected(QVariantList, bool)),
             this, SLOT(need_selected(QVariantList, bool)));
 
     connect(m_role_editor, SIGNAL(finished(int)), this, SLOT(done_editing_role(int)),Qt::UniqueConnection);
 
-    connect(this,SIGNAL(lostConnection()),equipoverview_dock,SLOT(clear()));
-    connect(this,SIGNAL(lostConnection()),pref_dock,SLOT(clear()));
-    connect(this,SIGNAL(lostConnection()),thought_dock,SLOT(clear()));
-    connect(this,SIGNAL(lostConnection()),needs_dock,SLOT(clear()));
+    connect(this,SIGNAL(lostConnection()),ui->equipment_overview_widget,SLOT(clear()));
+    connect(this,SIGNAL(lostConnection()),ui->preferences_widget,SLOT(clear()));
+    connect(this,SIGNAL(lostConnection()),ui->thoughts_widget,SLOT(clear()));
+    connect(this,SIGNAL(lostConnection()),ui->needs_widget,SLOT(clear()));
 
     connect(ui->btn_clear_filters, SIGNAL(clicked()),this,SLOT(clear_all_filters()));
 
@@ -384,14 +340,8 @@ void MainWindow::write_settings() {
         m_settings->endGroup();
         m_settings->beginGroup("gui_options");
         m_settings->setValue("group_by", m_model->current_grouping());
-
-        DwarfDetailsDock *dock = qobject_cast<DwarfDetailsDock*>(QObject::findChild<DwarfDetailsDock*>("dock_dwarf_details"));
-        if(dock){
-            QByteArray sizes = dock->get_ui_state();
-            if(!sizes.isNull())
-                m_settings->setValue("unit_detail_state", sizes);
-        }
         m_settings->endGroup();
+        ui->dwarf_details_widget->save_state(*m_settings);
 
         LOGI << "finished writing settings";
     }
@@ -464,9 +414,7 @@ void MainWindow::connect_to_df() {
                 m_view_manager->reload_views();
                 m_view_manager->draw_views();
 
-                GridViewDock *dock = qobject_cast<GridViewDock*>(QObject::findChild<GridViewDock*>("GridViewDock"));
-                if(dock)
-                    dock->draw_views();
+                m_grid_view_widget->draw_views();
             }
             if(DT->user_settings()->value("options/read_on_startup", true).toBool()) {
                 read_dwarves();
@@ -651,10 +599,7 @@ void MainWindow::read_dwarves() {
 
 void MainWindow::save_ui_selections(){
     //clear the selected dwarf's details, save the id of the one we're showing
-    DwarfDetailsDock *dock = qobject_cast<DwarfDetailsDock*>(QObject::findChild<DwarfDetailsDock*>("dock_dwarf_details"));
-    if(dock){
-        dock->clear(false);
-    }
+    ui->dwarf_details_widget->clear();
     //save the ids of the currently selected dwarfs
     if(m_view_manager){
         foreach(Dwarf *d, m_view_manager->get_selected_dwarfs()){
@@ -672,18 +617,10 @@ void MainWindow::restore_ui_selections(){
     m_view_manager->reselect(m_selected_units);
 
     //refresh the unit dock details
-    DwarfDetailsDock *dock = qobject_cast<DwarfDetailsDock*>(QObject::findChild<DwarfDetailsDock*>("dock_dwarf_details"));
-    bool unit_found = false;
-    if(dock != 0 && dock->last_id() >= 0){
-        Dwarf *d = m_model->get_dwarf_by_id(dock->last_id());
-        if(d){
-            dock->show_dwarf(d);
-            unit_found = true;
-        }
-    }
-    if(!unit_found && dock){
-        dock->clear(false);
-    }
+    if (Dwarf *d = m_model->get_dwarf_by_id(ui->dwarf_details_widget->saved_id()))
+        ui->dwarf_details_widget->show_dwarf(d);
+    else
+        ui->dwarf_details_widget->clear();
     m_selected_units.clear();
 }
 
@@ -1048,9 +985,7 @@ void MainWindow::import_gridviews() {
     ImportExportDialog d(this);
     if(d.setup_for_gridview_import()){
         if (d.exec()) {
-            GridViewDock *dock = qobject_cast<GridViewDock*>(QObject::findChild<GridViewDock*>("GridViewDock"));
-            if(dock)
-                dock->draw_views();
+            m_grid_view_widget->draw_views();
         }
     }
 }
@@ -1090,10 +1025,9 @@ void MainWindow::clear_user_settings() {
 
 
 void MainWindow::show_dwarf_details_dock(Dwarf *d) {
-    DwarfDetailsDock *dock = qobject_cast<DwarfDetailsDock*>(QObject::findChild<DwarfDetailsDock*>("dock_dwarf_details"));
-    if (dock && d) {
-        dock->show_dwarf(d);
-        dock->show();
+    if (d) {
+        ui->dwarf_details_widget->show_dwarf(d);
+        ui->dock_dwarf_details->show();
     }
 }
 
@@ -1721,9 +1655,7 @@ void MainWindow::reset(){
 
     this->setWindowTitle("Dwarf Therapist - Disconnected");
 
-    DwarfDetailsDock *dock = qobject_cast<DwarfDetailsDock*>(QObject::findChild<DwarfDetailsDock*>("dock_dwarf_details"));
-    if(dock)
-        dock->clear();
+    ui->dwarf_details_widget->clear();
 
     //clear selected dwarfs
     if(m_view_manager)

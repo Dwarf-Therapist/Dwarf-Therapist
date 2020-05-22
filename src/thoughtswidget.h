@@ -20,24 +20,48 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef INFORMATIONDOCK_H
-#define INFORMATIONDOCK_H
+#ifndef THOUGHTSWIDGET_H
+#define THOUGHTSWIDGET_H
 
-#include "basedock.h"
+#include "basetreewidget.h"
+#include <QString>
+#include <QStyledItemDelegate>
 
-class QTextEdit;
+class QPainter;
+class QStyleOptionViewItem;
+class QColor;
 
-class InformationDock : public BaseDock {
+class ThoughtsWidget : public BaseTreeWidget {
     Q_OBJECT
 public:
-    InformationDock(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    ThoughtsWidget(QWidget *parent = nullptr);
 
-public slots:
-    void show_info(QString info);
-    void clear();
+protected:
+    void search_tree(QString val);
+    void build_tree();
 
-private:
-    QTextEdit *te_info;
+protected slots:
+    void selection_changed();
+
+signals:
+    void item_selected(QVariantList);
 
 };
-#endif // INFORMATIONDOCK_H
+
+class ThoughtsItemDelegate : public QStyledItemDelegate {
+    Q_OBJECT
+public:
+
+    ThoughtsItemDelegate(QObject *parent = 0)
+        : QStyledItemDelegate(parent)
+    {
+    }
+
+    void paint(QPainter *painter, const QStyleOptionViewItem &option,const QModelIndex &index) const;
+
+protected:
+    QString appendText(QPainter *painter, const QStyleOptionViewItem &option, QColor text_color, QString curr_text, QString text) const;
+    QString prependText(QPainter *painter, const QStyleOptionViewItem &option, QColor text_color, QString curr_text, QString text) const;
+};
+
+#endif // THOUGHTSDOCK_H

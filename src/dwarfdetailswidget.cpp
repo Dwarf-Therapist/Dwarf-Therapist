@@ -37,6 +37,7 @@ THE SOFTWARE.
 #include "healthinfo.h"
 #include "belief.h"
 #include "adaptivecolorfactory.h"
+#include "standardpaths.h"
 
 #include <QMainWindow>
 #include <QProgressBar>
@@ -51,11 +52,9 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     : QWidget(parent, flags)
     , ui(new Ui::DwarfDetailsWidget)
     , m_current_id(-1)
+    , m_saved_id(-1)
 {
     ui->setupUi(this);
-
-    //ui->splitter->setOpaqueResize(true);
-    //ui->splitter->setObjectName("details_splitter"); //important!! this name is used to find the splitter and save it's state!!
 
     {
         AdaptiveColorFactory adaptive;
@@ -155,10 +154,6 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
 
     ui->tw_health->setColumnCount(2);
 
-    //splitter
-    m_ui_state = DT->user_settings()->value("gui_options/unit_detail_state").toByteArray();
-    //ui->splitter->restoreState(m_ui_state);
-
     //skill sorts
     m_sorting << qMakePair(1,Qt::DescendingOrder);
     ui->tw_skills->sortItems(1, Qt::DescendingOrder);
@@ -178,26 +173,27 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     m_sorting << qMakePair(0,Qt::AscendingOrder);
     ui->tw_health->sortItems(0, Qt::AscendingOrder);
 
-    QMainWindow *dock_area = new QMainWindow(this);
-    dock_area->setObjectName("unit_details_dock_area");
-    dock_area->setWindowFlags(Qt::Widget);
-    dock_area->setCentralWidget(0);
-    dock_area->setTabPosition(Qt::AllDockWidgetAreas,QTabWidget::North);
-    ui->verticalLayout->addWidget(dock_area);
+    m_dock_area = new QMainWindow(this);
+    m_dock_area->setObjectName("unit_details_dock_area");
+    m_dock_area->setWindowFlags(Qt::Widget);
+    m_dock_area->setCentralWidget(0);
+    m_dock_area->setTabPosition(Qt::AllDockWidgetAreas,QTabWidget::North);
+    ui->content->layout()->addWidget(m_dock_area);
 
     foreach(QDockWidget *dw, this->findChildren<QDockWidget*>()){
-        dock_area->addDockWidget(Qt::TopDockWidgetArea,dw,Qt::Vertical);
+        m_dock_area->addDockWidget(Qt::TopDockWidgetArea,dw,Qt::Vertical);
     }
 
-    if(m_ui_state.count() > 0){
-        dock_area ->restoreState(m_ui_state);
+    auto ui_state = StandardPaths::settings()->value("gui_options/unit_detail_state").toByteArray();
+    if(ui_state.count() > 0){
+        m_dock_area->restoreState(ui_state);
     }else{
         QDockWidget *first_dock = 0;
-        foreach(QDockWidget *dw, dock_area->findChildren<QDockWidget*>()){
+        foreach(QDockWidget *dw, m_dock_area->findChildren<QDockWidget*>()){
             if(first_dock == 0){
                 first_dock = dw;
             }else{
-                dock_area->tabifyDockWidget(first_dock,dw);
+                m_dock_area->tabifyDockWidget(first_dock,dw);
             }
         }
         ui->dock_unit_skills->raise();
@@ -210,6 +206,8 @@ DwarfDetailsWidget::~DwarfDetailsWidget() {
 }
 
 void DwarfDetailsWidget::clear(){
+    ui->stacked_container->setCurrentWidget(ui->placeholder);
+    m_saved_id = m_current_id;
     m_current_id = -1;
     //clear tables
     clear_table(*ui->tw_skills);
@@ -680,6 +678,8 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
 
     m_current_id = d->id();
     d = 0;
+
+    ui->stacked_container->setCurrentWidget(ui->content);
 }
 
 void DwarfDetailsWidget::add_belief_row(int belief_id, Dwarf *d, bool is_cultural){
@@ -736,5 +736,9 @@ QString DwarfDetailsWidget::label_gradient(QColor c1, QColor c2){
             .arg(QApplication::palette().toolTipText().color().name());
 }
 
+void DwarfDetailsWidget::save_state(QSettings &settings) const
+{
+    settings.setValue("gui_options/unit_detail_state", m_dock_area->saveState());
+}
 
 

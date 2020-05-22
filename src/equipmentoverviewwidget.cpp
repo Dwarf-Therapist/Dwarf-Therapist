@@ -23,7 +23,7 @@ THE SOFTWARE.
 
 #include "dfinstance.h"
 #include "dwarftherapist.h"
-#include "equipmentoverviewdock.h"
+#include "equipmentoverviewwidget.h"
 #include "equipwarn.h"
 #include "item.h"
 #include "adaptivecolorfactory.h"
@@ -34,10 +34,10 @@ THE SOFTWARE.
 #include <QPainter>
 #include <QSettings>
 
-QString EquipmentOverviewDock::m_option_name = "options/docks/equipoverview_include_mats";
+QString EquipmentOverviewWidget::m_option_name = "options/docks/equipoverview_include_mats";
 
-EquipmentOverviewDock::EquipmentOverviewDock(QWidget *parent, Qt::WindowFlags flags)
-    : BaseTreeDock(tr("Equipment Overview"),"dock_equipmentoverview",true, parent, flags)
+EquipmentOverviewWidget::EquipmentOverviewWidget(QWidget *parent)
+    : BaseTreeWidget(true, parent)
 {
     m_tree_view->setColumnCount(3);
     m_tree_view->setHeaderLabels(QStringList() << tr("Item") << tr("Status") << tr("Count"));
@@ -50,8 +50,8 @@ EquipmentOverviewDock::EquipmentOverviewDock(QWidget *parent, Qt::WindowFlags fl
     lbl_read->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Minimum);
     lbl_read->hide();
 
-    m_base_widget->layout()->addWidget(chk_mats);
-    m_base_widget->layout()->addWidget(lbl_read);
+    layout()->addWidget(chk_mats);
+    layout()->addWidget(lbl_read);
 
     connect(chk_mats, SIGNAL(clicked(bool)),this,SLOT(check_changed(bool)));
 
@@ -65,7 +65,7 @@ EquipmentOverviewDock::EquipmentOverviewDock(QWidget *parent, Qt::WindowFlags fl
     m_wear_level_desc.insert(Item::IS_TATTERED,tr("Tattered"));
 }
 
-void EquipmentOverviewDock::build_tree(){
+void EquipmentOverviewWidget::build_tree(){
     lbl_read->hide();
 
     if(DT && DT->get_DFInstance()){
@@ -152,7 +152,7 @@ void EquipmentOverviewDock::build_tree(){
         m_tree_view->sortByColumn(2,Qt::DescendingOrder); //count
 }
 
-void EquipmentOverviewDock::search_tree(QString val){
+void EquipmentOverviewWidget::search_tree(QString val){
     val = "(" + val.replace(" ", "|") + ")";
     QRegExp filter = QRegExp(val,Qt::CaseInsensitive, QRegExp::RegExp);
     int hidden;
@@ -177,7 +177,7 @@ void EquipmentOverviewDock::search_tree(QString val){
     }
 }
 
-void EquipmentOverviewDock::selection_changed(){
+void EquipmentOverviewWidget::selection_changed(){
     QVariantList ids; //dwarf ids
     foreach(QTreeWidgetItem *item, m_tree_view->selectedItems()){
         if(item->childCount() <= 0){
@@ -191,7 +191,7 @@ void EquipmentOverviewDock::selection_changed(){
     emit item_selected(ids);
 }
 
-void EquipmentOverviewDock::check_changed(bool val){
+void EquipmentOverviewWidget::check_changed(bool val){
     DT->user_settings()->setValue(m_option_name,val);
     if(val != m_option_state){
         lbl_read->show();

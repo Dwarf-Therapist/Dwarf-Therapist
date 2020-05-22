@@ -20,19 +20,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef BASETREEDOCK_H
-#define BASETREEDOCK_H
+#ifndef BASETREEWIDGET_H
+#define BASETREEWIDGET_H
 
-#include "basedock.h"
 #include <QTreeWidget>
 
 class QPushButton;
 
-class BaseTreeDock : public BaseDock {
+class BaseTreeWidget : public QWidget {
     Q_OBJECT
 public:
-    BaseTreeDock(QString window_title, QString object_name, bool requires_refresh, QWidget *parent = 0, Qt::WindowFlags flags = 0);
-    virtual ~BaseTreeDock();
+    BaseTreeWidget(bool requires_refresh, QWidget *parent = nullptr);
+    virtual ~BaseTreeWidget();
 
 private:
     bool m_requires_refresh;
@@ -41,8 +40,6 @@ protected:
     QTreeWidget *m_tree_view;
     QLineEdit *m_le_search;
     QPushButton *m_btn_toggle_tree;
-
-    QWidget *m_base_widget;
 
     QIcon m_arr_in;
     QIcon m_arr_out;

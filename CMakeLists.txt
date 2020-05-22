@@ -71,7 +71,7 @@ add_executable(DwarfTherapist WIN32 MACOSX_BUNDLE
     src/attributecolumn.cpp
     src/attribute.cpp
     src/basedock.cpp
-    src/basetreedock.cpp
+    src/basetreewidget.cpp
     src/beliefcolumn.cpp
     src/belief.cpp
     src/caste.cpp
@@ -87,7 +87,6 @@ add_executable(DwarfTherapist WIN32 MACOSX_BUNDLE
     src/dfinstance.cpp
     src/dtstandarditem.cpp
     src/dwarf.cpp
-    src/dwarfdetailsdock.cpp
     src/dwarfdetailswidget.cpp
     src/dwarfjob.h
     src/dwarfmodel.cpp
@@ -97,7 +96,7 @@ add_executable(DwarfTherapist WIN32 MACOSX_BUNDLE
     src/emotion.cpp
     src/emotiongroup.cpp
     src/equipmentcolumn.cpp
-    src/equipmentoverviewdock.cpp
+    src/equipmentoverviewwidget.cpp
     src/equipwarn.cpp
     src/eventfilterlineedit.cpp
     src/flagarray.cpp
@@ -107,15 +106,15 @@ add_executable(DwarfTherapist WIN32 MACOSX_BUNDLE
     src/gamedatareader.cpp
     src/gridview.cpp
     src/gridviewdialog.cpp
-    src/gridviewdock.cpp
+    src/gridviewwidget.cpp
     src/happinesscolumn.cpp
     src/healthcolumn.cpp
-    src/healthlegenddock.cpp
+    src/healthlegendwidget.cpp
     src/highestmoodcolumn.cpp
     src/histfigure.cpp
     src/iconchooser.cpp
     src/importexportdialog.cpp
-    src/informationdock.cpp
+    src/informationwidget.cpp
     src/itemammo.cpp
     src/itemarmor.cpp
     src/itemarmorsubtype.cpp
@@ -140,7 +139,7 @@ add_executable(DwarfTherapist WIN32 MACOSX_BUNDLE
     src/mood.cpp
     src/multilabor.cpp
     src/needcolumn.cpp
-    src/needsdock.cpp
+    src/needswidget.cpp
     src/notificationwidget.cpp
     src/notifierwidget.cpp
     src/optimizereditor.cpp
@@ -150,7 +149,7 @@ add_executable(DwarfTherapist WIN32 MACOSX_BUNDLE
     src/preferencecolumn.cpp
     src/preference.cpp
     src/preferencepickerdialog.cpp
-    src/preferencesdock.cpp
+    src/preferenceswidget.cpp
     src/professioncolumn.cpp
     src/races.cpp
     src/reaction.cpp
@@ -168,7 +167,7 @@ add_executable(DwarfTherapist WIN32 MACOSX_BUNDLE
     src/selectparentlayoutdialog.cpp
     src/skillcolumn.cpp
     src/skill.cpp
-    src/skilllegenddock.cpp
+    src/skilllegendwidget.cpp
     src/sortfilterproxymodel.cpp
     src/spacercolumn.cpp
     src/squad.cpp
@@ -179,7 +178,7 @@ add_executable(DwarfTherapist WIN32 MACOSX_BUNDLE
     src/superlabor.cpp
     src/syndrome.cpp
     src/thought.cpp
-    src/thoughtsdock.cpp
+    src/thoughtswidget.cpp
     src/trainedcolumn.cpp
     src/traitcolumn.cpp
     src/trait.cpp

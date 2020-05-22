@@ -20,7 +20,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#include "basetreedock.h"
+#include "basetreewidget.h"
 #include "dwarftherapist.h"
 #include <QVBoxLayout>
 #include <QLineEdit>
@@ -28,21 +28,15 @@ THE SOFTWARE.
 #include <QCloseEvent>
 #include <QLabel>
 
-BaseTreeDock::BaseTreeDock(QString window_title, QString object_name, bool requires_refresh, QWidget *parent, Qt::WindowFlags flags)
-    : BaseDock(parent, flags)
+BaseTreeWidget::BaseTreeWidget(bool requires_refresh, QWidget *parent)
+    : QWidget(parent)
     , m_collapsed(true)
 {
-    setWindowTitle(window_title);
-    setObjectName(object_name);
-    setFeatures(QDockWidget::AllDockWidgetFeatures);
-    setAllowedAreas(Qt::AllDockWidgetAreas);
-
     m_arr_in = QIcon(":img/arrow-in.png");
     m_arr_out = QIcon(":img/arrow-out.png");
 
-    m_base_widget = new QWidget();
     QVBoxLayout *l = new QVBoxLayout();
-    m_base_widget->setLayout(l);
+    setLayout(l);
 
     m_tree_view = new QTreeWidget(this);
     m_tree_view->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -69,10 +63,8 @@ BaseTreeDock::BaseTreeDock(QString window_title, QString object_name, bool requi
     l->addLayout(s);
 
     QPushButton *btn = new QPushButton(tr("Clear Filter"),this);
-    m_base_widget->layout()->addWidget(m_tree_view);
-    m_base_widget->layout()->addWidget(btn);
-
-    setWidget(m_base_widget);
+    l->addWidget(m_tree_view);
+    l->addWidget(btn);
 
     connect(btn, SIGNAL(clicked()),this,SLOT(clear_filter()));
     connect(m_le_search, SIGNAL(textChanged(QString)), this, SLOT(search_changed(QString)));
@@ -87,13 +79,13 @@ BaseTreeDock::BaseTreeDock(QString window_title, QString object_name, bool requi
     }
 }
 
-BaseTreeDock::~BaseTreeDock(){
+BaseTreeWidget::~BaseTreeWidget(){
     delete m_le_search;
     delete m_btn_toggle_tree;
     delete m_tree_view;
 }
 
-void BaseTreeDock::refresh(){
+void BaseTreeWidget::refresh(){
     m_tree_view->clear();
 
     if(DT && DT->get_DFInstance()){
@@ -113,7 +105,7 @@ void BaseTreeDock::refresh(){
     }
 }
 
-void BaseTreeDock::toggle_tree(){
+void BaseTreeWidget::toggle_tree(){
     if(m_collapsed){
         m_tree_view->expandAll();
         m_collapsed = false;
@@ -125,24 +117,24 @@ void BaseTreeDock::toggle_tree(){
     }
 }
 
-void BaseTreeDock::clear(){
+void BaseTreeWidget::clear(){
     m_tree_view->clear();
 }
 
-void BaseTreeDock::search_changed(QString val){
+void BaseTreeWidget::search_changed(QString val){
     search_tree(val);
 }
 
-void BaseTreeDock::clear_search(){
+void BaseTreeWidget::clear_search(){
     m_le_search->setText("");
     search_tree("");
 }
 
-void BaseTreeDock::clear_filter(){
+void BaseTreeWidget::clear_filter(){
     m_tree_view->clearSelection();
 }
 
-void BaseTreeDock::closeEvent(QCloseEvent *event){
+void BaseTreeWidget::closeEvent(QCloseEvent *event){
     clear_search();
     clear_filter();
     event->accept();
