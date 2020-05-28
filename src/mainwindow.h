@@ -173,7 +173,6 @@ private:
     QCompleter *m_dwarf_name_completer;
     QStringList m_dwarf_names_list;
     bool m_try_download;
-    bool m_deleting_settings;
     pop_info m_pop_info;
     bool m_toolbar_configured;
     QVector<int> m_selected_units;
