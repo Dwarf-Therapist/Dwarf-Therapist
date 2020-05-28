@@ -28,6 +28,8 @@ THE SOFTWARE.
 
 #include <memory>
 
+class QSettings;
+
 namespace Ui { class NeedsWidget; }
 
 class NeedsDelegate;
@@ -38,6 +40,8 @@ class NeedsWidget: public QWidget
 public:
     NeedsWidget(QWidget *parent = nullptr);
     virtual ~NeedsWidget();
+
+    void save_state(QSettings &) const;
 
 public slots:
     void clear();

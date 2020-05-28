@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include "dwarf.h"
 #include "gamedatareader.h"
 #include "histfigure.h"
+#include "standardpaths.h"
 #include "unitneed.h"
 
 enum NeedsWidgetRole
@@ -48,6 +49,8 @@ NeedsWidget::NeedsWidget(QWidget *parent)
     ui->setupUi(this);
 
     // Focus setup
+    m_focus_model.setHorizontalHeaderLabels({tr("Focus"), tr("Count")});
+
     QList<QColor> focus_colors;
     for (int i = 0; i < Dwarf::FOCUS_DEGREE_COUNT; ++i)
         focus_colors.append(Dwarf::get_focus_color(i, false, true));
@@ -61,17 +64,24 @@ NeedsWidget::NeedsWidget(QWidget *parent)
             this, SLOT(focus_selection_changed()));
 
     // Needs setup
+    m_needs_model.setHorizontalHeaderLabels({tr("Need"), tr("Count")});
+
     QList<QColor> needs_colors;
     for (int i = 0; i < UnitNeed::DEGREE_COUNT; ++i)
         needs_colors.append(UnitNeed::degree_color(i, false, true));
     m_needs_delegate = std::make_unique<NeedsDelegate>(needs_colors);
 
-    m_needs_model.clear();
     ui->need_view->view()->setSelectionMode(QAbstractItemView::ExtendedSelection);
     ui->need_view->set_filter_mode(SortFilterProxyModel::TopLevelMode);
     ui->need_view->set_model(&m_needs_model);
     ui->need_view->view()->setItemDelegate(m_needs_delegate.get());
     ui->need_view->filter_proxy().setSortRole(SortRole);
+
+    auto settings = StandardPaths::settings();
+    settings->beginGroup("needs_widget");
+    ui->focus_view->header()->restoreState(settings->value("focus_header").toByteArray());
+    ui->need_view->view()->header()->restoreState(settings->value("need_header").toByteArray());
+    settings->endGroup();
 
     connect(ui->need_view, SIGNAL(item_selection_changed(const QItemSelection &, const QItemSelection &)),
             this, SLOT(need_selection_changed()));
@@ -87,12 +97,18 @@ NeedsWidget::~NeedsWidget()
 {
 }
 
+void NeedsWidget::save_state(QSettings &settings) const
+{
+    settings.beginGroup("needs_widget");
+    settings.setValue("focus_header", ui->focus_view->header()->saveState());
+    settings.setValue("need_header", ui->need_view->view()->header()->saveState());
+    settings.endGroup();
+}
+
 void NeedsWidget::clear()
 {
-    m_focus_model.clear();
-    m_focus_model.setHorizontalHeaderLabels({tr("Focus"), tr("Count")});
-    m_needs_model.clear();
-    m_needs_model.setHorizontalHeaderLabels({tr("Need"), tr("Count")});
+    m_focus_model.removeRows(0, m_focus_model.rowCount());
+    m_needs_model.removeRows(0, m_needs_model.rowCount());
 }
 
 void NeedsWidget::refresh()

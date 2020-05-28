@@ -70,12 +70,12 @@ void SearchFilterTreeView::set_model(QAbstractItemModel *model)
     m_filter_proxy.setSourceModel(model);
 }
 
-QAbstractItemView *SearchFilterTreeView::view()
+QTreeView *SearchFilterTreeView::view()
 {
     return ui->tree_view;
 }
 
-const QAbstractItemView *SearchFilterTreeView::view() const
+const QTreeView *SearchFilterTreeView::view() const
 {
     return ui->tree_view;
 }
