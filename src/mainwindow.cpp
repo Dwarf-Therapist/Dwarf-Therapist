@@ -319,6 +319,7 @@ void MainWindow::closeEvent(QCloseEvent *evt) {
         m_settings->setValue("group_by", m_model->current_grouping());
         m_settings->endGroup();
         ui->dwarf_details_widget->save_state(*m_settings);
+        ui->needs_widget->save_state(*m_settings);
         LOGI << "finished writing settings";
     }
     m_view_manager->write_views();

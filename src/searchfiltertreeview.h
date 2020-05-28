@@ -30,7 +30,7 @@ THE SOFTWARE.
 
 namespace Ui { class SearchFilterTreeView; }
 class QAbstractItemModel;
-class QAbstractItemView;
+class QTreeView;
 
 class SearchFilterTreeView: public QWidget
 {
@@ -47,8 +47,8 @@ public:
 
     void set_model(QAbstractItemModel *model);
 
-    QAbstractItemView *view();
-    const QAbstractItemView *view() const;
+    QTreeView *view();
+    const QTreeView *view() const;
 
     QSortFilterProxyModel &filter_proxy();
     const QSortFilterProxyModel &filter_proxy() const;
