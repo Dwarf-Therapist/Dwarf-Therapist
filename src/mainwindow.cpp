@@ -90,7 +90,6 @@ MainWindow::MainWindow(QWidget *parent)
     , m_show_result_on_equal(false)
     , m_dwarf_name_completer(0)
     , m_try_download(true)
-    , m_deleting_settings(false)
     , m_toolbar_configured(false)
     , m_act_sep_optimize(0)
     , m_btn_optimize(0)
@@ -349,10 +348,8 @@ void MainWindow::write_settings() {
 
 void MainWindow::closeEvent(QCloseEvent *evt) {
     LOGI << "Beginning shutdown";
-    if(!m_deleting_settings) {
-        write_settings();
-        m_view_manager->write_views();
-    }
+    write_settings();
+    m_view_manager->write_views();
     evt->accept();
     LOGI << "Closing Dwarf Therapist normally";
 }
@@ -991,35 +988,17 @@ void MainWindow::import_gridviews() {
 }
 
 void MainWindow::clear_user_settings() {
-    QMessageBox *mb = new QMessageBox(qApp->activeWindow());
-    mb->setIcon(QMessageBox::Warning);
-    mb->setWindowTitle(tr("Clear User Settings"));
-    mb->setText(tr("Warning: This will delete all of your user settings and exit Dwarf Therapist!"));
-    mb->addButton(QMessageBox::Ok);
-    mb->addButton(QMessageBox::Cancel);
-    if(QMessageBox::Ok == mb->exec()) {
-        //Delete data
-        m_settings->clear();
-        m_settings->sync();
-
-        QFile file(m_settings->fileName());
-        LOGI << "Removing file:" << m_settings->fileName();
-
-        m_settings.reset(nullptr);
-
-        if(!file.remove()) {
-            LOGW << "Error removing file!";
-            delete mb;
-            mb = new QMessageBox(qApp->activeWindow());
-            mb->setIcon(QMessageBox::Critical);
-            mb->setWindowTitle("Clear User Settings");
-            mb->setText(tr("Unable to delete settings file."));
-            mb->exec();
-            return;
-        }
-
-        m_deleting_settings = true;
-        close();
+    QMessageBox mb(qApp->activeWindow());
+    mb.setIcon(QMessageBox::Warning);
+    mb.setWindowTitle(tr("Clear User Settings"));
+    mb.setText(tr("Warning: This will delete all of your user settings and exit Dwarf Therapist!"));
+    mb.addButton(QMessageBox::Ok);
+    mb.addButton(QMessageBox::Cancel);
+    if(QMessageBox::Ok == mb.exec()) {
+        auto app = QCoreApplication::instance();
+        connect(app, &QCoreApplication::aboutToQuit, [](){ QFile(StandardPaths::settings()->fileName()).remove(); });
+        LOGI << "Quit application for deleting user config file";
+        app->quit();
     }
 }
 
