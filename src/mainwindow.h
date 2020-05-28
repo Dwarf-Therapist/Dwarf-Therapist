@@ -168,7 +168,6 @@ private:
     ScriptDialog *m_script_dialog;
     RoleDialog *m_role_editor;
     optimizereditor *m_optimize_plan_editor;
-    bool m_reading_settings;
     bool m_show_result_on_equal; //! used during version checks
     QCompleter *m_dwarf_name_completer;
     QStringList m_dwarf_names_list;
@@ -191,9 +190,6 @@ private:
     void closeEvent(QCloseEvent *evt);
     void resizeEvent(QResizeEvent *evt);
     void moveEvent(QMoveEvent *evt);
-
-    void read_settings();
-    void write_settings();
 
     void refresh_role_menus();
 
