@@ -86,7 +86,6 @@ MainWindow::MainWindow(QWidget *parent)
     , m_script_dialog(new ScriptDialog(this))
     , m_role_editor(new RoleDialog(m_pref_model, this))
     , m_optimize_plan_editor(0)
-    , m_reading_settings(false)
     , m_show_result_on_equal(false)
     , m_dwarf_name_completer(0)
     , m_try_download(true)
@@ -222,7 +221,12 @@ MainWindow::MainWindow(QWidget *parent)
     ui->cb_group_by->addItem(tr("Total Assigned Skilled Labors"),DwarfModel::GB_ASSIGNED_SKILLED_LABORS);
     ui->cb_group_by->addItem(tr("Total Skill Levels"),DwarfModel::GB_TOTAL_SKILL_LEVELS);
 
-    read_settings();
+    // restore window geometry and state (toolbars, docks, ...)
+    m_settings->beginGroup("window");
+    restoreGeometry(m_settings->value("geometry").toByteArray());
+    restoreState(m_settings->value("state").toByteArray());
+    m_settings->endGroup();
+
     DefaultRoleWeight::update_all();
     load_customizations();
     reload_filter_scripts();
@@ -303,52 +307,20 @@ MainWindow::~MainWindow() {
     delete ui;
 }
 
-void MainWindow::read_settings() {
-    m_reading_settings = true;
-    m_settings->beginGroup("window");
-    { // WINDOW SETTINGS
-        try{
-            //restore window size/position
-            QByteArray geom = m_settings->value("geometry").toByteArray();
-            if (!geom.isEmpty()) {
-                restoreGeometry(geom);
-            }
-            //restore toolbars, docks, etc..
-            QByteArray state = m_settings->value("state").toByteArray();
-            if (!state.isEmpty()) {
-                restoreState(state);
-            }
-
-        }catch(...){
-            //this can sometimes crash, no idea why
-        }
-    }
-    m_settings->endGroup();
-    m_reading_settings = false;
-
-}
-
-void MainWindow::write_settings() {
-    if (m_settings && !m_reading_settings) {
+void MainWindow::closeEvent(QCloseEvent *evt) {
+    LOGI << "Beginning shutdown";
+    if (m_settings) {
         LOGI << "beginning to write settings";
-        QByteArray geom = saveGeometry();
-        QByteArray state = saveState();
         m_settings->beginGroup("window");
-        m_settings->setValue("geometry", QVariant(geom));
-        m_settings->setValue("state", QVariant(state));
+        m_settings->setValue("geometry", saveGeometry());
+        m_settings->setValue("state", saveState());
         m_settings->endGroup();
         m_settings->beginGroup("gui_options");
         m_settings->setValue("group_by", m_model->current_grouping());
         m_settings->endGroup();
         ui->dwarf_details_widget->save_state(*m_settings);
-
         LOGI << "finished writing settings";
     }
-}
-
-void MainWindow::closeEvent(QCloseEvent *evt) {
-    LOGI << "Beginning shutdown";
-    write_settings();
     m_view_manager->write_views();
     evt->accept();
     LOGI << "Closing Dwarf Therapist normally";
