@@ -23,6 +23,7 @@ THE SOFTWARE.
 #include "preferenceswidget.h"
 #include "dwarftherapist.h"
 #include "dfinstance.h"
+#include "standardpaths.h"
 
 #include <QCloseEvent>
 #include <QHeaderView>
@@ -58,6 +59,10 @@ PreferencesWidget::PreferencesWidget(QWidget *parent)
     tw_prefs->horizontalHeader()->resizeSection(1,40);
     tw_prefs->horizontalHeader()->resizeSection(2,40);
 
+    auto settings = StandardPaths::settings();
+    auto header_state = settings->value("preferences_widget/header").toByteArray();
+    tw_prefs->horizontalHeader()->restoreState(header_state);
+
     QHBoxLayout *s = new QHBoxLayout();
     QLabel *lbl_search = new QLabel("Search",this);
     s->addWidget(lbl_search);
@@ -80,6 +85,12 @@ PreferencesWidget::PreferencesWidget(QWidget *parent)
     connect(btn_clear_search, SIGNAL(clicked()),this,SLOT(clear_search()));
 
     connect(DT,SIGNAL(units_refreshed()),this,SLOT(refresh()));
+}
+
+void PreferencesWidget::save_state(QSettings &settings) const
+{
+    auto header_state = tw_prefs->horizontalHeader()->saveState();
+    settings.setValue("preferences_widget/header", header_state);
 }
 
 void PreferencesWidget::clear(){
