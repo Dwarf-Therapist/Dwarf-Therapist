@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include <QRegExp>
 
 class QTableWidget;
+class QSettings;
 
 class PreferencesWidget : public QWidget {
     Q_OBJECT
@@ -35,6 +36,7 @@ public:
     PreferencesWidget(QWidget *parent = nullptr);
 
     void filter();
+    void save_state(QSettings &) const;
 
 protected:
     QTableWidget *tw_prefs;
