@@ -80,6 +80,8 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     }
 
     int default_size = 60;
+    auto settings = StandardPaths::settings();
+    settings->beginGroup("dwarf_details_widget");
 
     ui->tw_skills->setColumnCount(4);
     ui->tw_skills->setEditTriggers(QTableWidget::NoEditTriggers);
@@ -91,9 +93,15 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     ui->tw_skills->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Interactive);
     ui->tw_skills->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Interactive);
     ui->tw_skills->horizontalHeader()->setStretchLastSection(true);
-    ui->tw_skills->horizontalHeader()->resizeSection(0,100);
-    ui->tw_skills->horizontalHeader()->resizeSection(1,default_size);
-    ui->tw_skills->horizontalHeader()->resizeSection(2,default_size);
+    auto skills_header_state = settings->value("skills_header_state").toByteArray();
+    if (skills_header_state.isEmpty()) {
+        // Use default sizes
+        ui->tw_skills->horizontalHeader()->resizeSection(0,100);
+        ui->tw_skills->horizontalHeader()->resizeSection(1,default_size);
+        ui->tw_skills->horizontalHeader()->resizeSection(2,default_size);
+    }
+    else
+        ui->tw_skills->horizontalHeader()->restoreState(skills_header_state);
 
     ui->tw_attributes->setColumnCount(4);
     ui->tw_attributes->setEditTriggers(QTableWidget::NoEditTriggers);
@@ -107,9 +115,15 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     ui->tw_attributes->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Interactive);
     ui->tw_attributes->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Interactive);
     ui->tw_attributes->horizontalHeader()->setStretchLastSection(true);
-    ui->tw_attributes->horizontalHeader()->resizeSection(0,100);
-    ui->tw_attributes->horizontalHeader()->resizeSection(1,default_size);
-    ui->tw_attributes->horizontalHeader()->resizeSection(2,default_size);
+    auto attrs_header_state = settings->value("attributes_header_state").toByteArray();
+    if (attrs_header_state.isEmpty()) {
+        // Use default sizes
+        ui->tw_attributes->horizontalHeader()->resizeSection(0,100);
+        ui->tw_attributes->horizontalHeader()->resizeSection(1,default_size);
+        ui->tw_attributes->horizontalHeader()->resizeSection(2,default_size);
+    }
+    else
+        ui->tw_attributes->horizontalHeader()->restoreState(attrs_header_state);
 
     ui->tw_traits->setColumnCount(3);
     ui->tw_traits->setEditTriggers(QTableWidget::NoEditTriggers);
@@ -121,11 +135,15 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     ui->tw_traits->verticalHeader()->hide();
     ui->tw_traits->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
     ui->tw_traits->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Interactive);
-//    ui->tw_traits->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Interactive);
-    ui->tw_traits->horizontalHeader()->setStretchLastSection(true);
-    ui->tw_traits->horizontalHeader()->resizeSection(0,100);
-    ui->tw_traits->horizontalHeader()->resizeSection(1,default_size);
-//    ui->tw_traits->horizontalHeader()->resizeSection(2,default_size);
+    auto traits_header_state = settings->value("traits_header_state").toByteArray();
+    if (traits_header_state.isEmpty()) {
+        // Use default sizes
+        ui->tw_traits->horizontalHeader()->setStretchLastSection(true);
+        ui->tw_traits->horizontalHeader()->resizeSection(0,100);
+        ui->tw_traits->horizontalHeader()->resizeSection(1,default_size);
+    }
+    else
+        ui->tw_traits->horizontalHeader()->restoreState(traits_header_state);
 
     ui->tw_roles->setColumnCount(2);
     ui->tw_roles->setEditTriggers(QTableWidget::NoEditTriggers);
@@ -137,7 +155,13 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     ui->tw_roles->verticalHeader()->hide();
     ui->tw_roles->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
     ui->tw_roles->horizontalHeader()->setStretchLastSection(true);
-    ui->tw_roles->horizontalHeader()->resizeSection(0,100);
+    auto roles_header_state = settings->value("roles_header_state").toByteArray();
+    if (roles_header_state.isEmpty()) {
+        // Use default sizes
+        ui->tw_roles->horizontalHeader()->resizeSection(0,100);
+    }
+    else
+        ui->tw_roles->horizontalHeader()->restoreState(roles_header_state);
 
     ui->tw_prefs->setColumnCount(2);
     ui->tw_prefs->setEditTriggers(QTableWidget::NoEditTriggers);
@@ -149,10 +173,18 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     ui->tw_prefs->verticalHeader()->hide();
     ui->tw_prefs->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
     ui->tw_prefs->horizontalHeader()->setStretchLastSection(true);
-    ui->tw_prefs->horizontalHeader()->resizeSection(0,100);
+    auto prefs_header_state = settings->value("prefs_header_state").toByteArray();
+    if (prefs_header_state.isEmpty()) {
+        // Use default sizes
+        ui->tw_prefs->horizontalHeader()->resizeSection(0,100);
+    }
+    else
+        ui->tw_prefs->horizontalHeader()->restoreState(prefs_header_state);
 
 
     ui->tw_health->setColumnCount(2);
+    auto health_header_state = settings->value("health_header_state").toByteArray();
+    ui->tw_health->header()->restoreState(health_header_state);
 
     //skill sorts
     m_sorting << qMakePair(1,Qt::DescendingOrder);
@@ -184,10 +216,10 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
         m_dock_area->addDockWidget(Qt::TopDockWidgetArea,dw,Qt::Vertical);
     }
 
-    auto ui_state = StandardPaths::settings()->value("gui_options/unit_detail_state").toByteArray();
-    if(ui_state.count() > 0){
+    auto ui_state = settings->value("dockarea_state").toByteArray();
+    if (!ui_state.isEmpty())
         m_dock_area->restoreState(ui_state);
-    }else{
+    else {
         QDockWidget *first_dock = 0;
         foreach(QDockWidget *dw, m_dock_area->findChildren<QDockWidget*>()){
             if(first_dock == 0){
@@ -738,7 +770,15 @@ QString DwarfDetailsWidget::label_gradient(QColor c1, QColor c2){
 
 void DwarfDetailsWidget::save_state(QSettings &settings) const
 {
-    settings.setValue("gui_options/unit_detail_state", m_dock_area->saveState());
+    settings.beginGroup("dwarf_details_widget");
+    settings.setValue("skills_header_state", ui->tw_skills->horizontalHeader()->saveState());
+    settings.setValue("attributes_header_state", ui->tw_attributes->horizontalHeader()->saveState());
+    settings.setValue("traits_header_state", ui->tw_traits->horizontalHeader()->saveState());
+    settings.setValue("roles_header_state", ui->tw_roles->horizontalHeader()->saveState());
+    settings.setValue("prefs_header_state", ui->tw_prefs->horizontalHeader()->saveState());
+    settings.setValue("health_header_state", ui->tw_health->header()->saveState());
+    settings.setValue("dockarea_state", m_dock_area->saveState());
+    settings.endGroup();
 }
 
 
