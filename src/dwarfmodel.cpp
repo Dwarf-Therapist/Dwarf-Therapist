@@ -486,7 +486,7 @@ void DwarfModel::build_row(const QString &key) {
         } else if (m_group_by == GB_CASTE_TAG){
             agg_first_col->setData(first_dwarf->caste_tag(), DR_SORT_VALUE);
         } else if (m_group_by == GB_AGE){
-            agg_first_col->setData(first_dwarf->get_age(), DR_SORT_VALUE);
+            agg_first_col->setData(first_dwarf->get_age_in_ticks(), DR_SORT_VALUE);
         } else if (m_group_by == GB_SEX){
             agg_first_col->setData(Dwarf::get_gender_desc(first_dwarf->get_gender()), DR_SORT_VALUE);
         } else if (m_group_by == GB_SEX_ORIENT){
@@ -589,7 +589,7 @@ void DwarfModel::build_row(const QString &key) {
         i_name->setData(d->id(), DR_ID);
 
         //set the roles for the special right click sorting
-        i_name->setData(d->get_age(), DR_AGE);
+        i_name->setData(d->get_age_in_ticks(), DR_AGE);
         i_name->setData(d->body_size(), DR_SIZE);
         i_name->setData(d->nice_name(), DR_NAME);
 
@@ -612,7 +612,7 @@ void DwarfModel::build_row(const QString &key) {
         }
             break;
         case GB_AGE:
-            sort_val = d->get_age();
+            sort_val = d->get_age_in_ticks();
             break;
         case GB_SEX_ORIENT:
             sort_val = d->get_gender_orient_desc();
