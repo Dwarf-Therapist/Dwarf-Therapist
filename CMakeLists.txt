@@ -84,6 +84,7 @@ add_executable(DwarfTherapist WIN32 MACOSX_BUNDLE
     src/customprofession.cpp
     src/defaultfonts.cpp
     src/defaultroleweight.cpp
+    src/dftime.cpp
     src/dfinstance.cpp
     src/dtstandarditem.cpp
     src/dwarf.cpp

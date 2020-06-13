@@ -37,8 +37,6 @@ UnitEmotion::UnitEmotion(QObject *parent)
     , m_eType(EM_NONE)
     , m_thought_id(-1)
     , m_sub_id(-1)
-    , m_year(-1)
-    , m_year_tick(-1)
     , m_desc("??")
     , m_desc_colored("??")
     , m_count(1)
@@ -48,7 +46,6 @@ UnitEmotion::UnitEmotion(QObject *parent)
     , m_intensifier(0)
     , m_optional_level(-1)
     , m_compare_id("")
-    , m_date_in_ticks(-1)
 {
 }
 
@@ -70,9 +67,9 @@ UnitEmotion::UnitEmotion(VIRTADDR addr, DFInstance *df, QObject *parent)
     m_thought_id = df->read_int(m_mem->emotion_field(addr, "thought_id"));
     m_sub_id = df->read_int(m_mem->emotion_field(addr, "sub_id"));
     m_optional_level = df->read_int(m_mem->emotion_field(addr, "level"));
-    m_year = df->read_int(m_mem->emotion_field(addr, "year"));
-    m_year_tick = df->read_int(m_mem->emotion_field(addr, "year_tick"));
-    m_date_in_ticks = m_year * df->ticks_per_year + m_year_tick;
+    m_time = df_date_convert<df_time>(std::make_tuple(
+                df_year(df->read_int(m_mem->emotion_field(addr, "year"))),
+                df_tick(df->read_int(m_mem->emotion_field(addr, "year_tick")))));
 
     GameDataReader *gdr = GameDataReader::ptr();
     Thought *t = gdr->get_thought(m_thought_id);

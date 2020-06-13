@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include "role.h"
 #include "syndrome.h"
 #include "equipwarn.h"
+#include "dftime.h"
 #include <QModelIndex>
 #include <memory>
 
@@ -319,7 +320,7 @@ public:
     Race* get_race() { return m_race; }
 
     //! return this creature's age
-    Q_INVOKABLE short get_age() { return m_age; }
+    Q_INVOKABLE short get_age() { return std::chrono::duration_cast<df_year>(m_age).count(); }
     QString get_age_formatted();
 
     //! return this creature's flag1
@@ -358,7 +359,7 @@ public:
     int total_xp() {return m_total_xp;}
 
     //! return the migration wave
-    Q_INVOKABLE int migration_wave() {return m_migration_wave;}
+    Q_INVOKABLE int migration_wave() const { return m_arrival_time.count(); }
 
     //! returns a description of birth or migration
     QString get_migration_desc();
@@ -455,9 +456,6 @@ public:
     //! set the pending nickname for this dwarf (does not auto-commit)
     void set_nickname(const QString &nick);
 
-    //! set the migration wave this dwarf (DwarfModel currently calls this with its best guess)
-    void set_migration_wave(const int &wave_number) {m_migration_wave = wave_number;}
-
     /*! manually set a labor as enabled or disabled for this dwarf. This method automatically unsets
     exclusive partners of a labor, or weapon choice. It also defends against cheating by not allowing
     labors to be set on certain professions (Baby, Child, Nobles, etc...)
@@ -518,10 +516,9 @@ public:
     Q_INVOKABLE bool can_set_labors() {return m_can_set_labors;}
 
     //birth year/time invokables
-    Q_INVOKABLE quint32 get_birth_time() { return m_birth_time; }
-    Q_INVOKABLE quint32 get_birth_year() { return m_birth_year; }
-    Q_INVOKABLE bool born_in_fortress() { return m_born_in_fortress; }
-    Q_INVOKABLE void set_born_in_fortress(bool val) { m_born_in_fortress = val; }
+    Q_INVOKABLE quint32 get_birth_time() { return std::get<df_tick>(m_birth_date).count(); }
+    Q_INVOKABLE quint32 get_birth_year() { return std::get<df_year>(m_birth_date).count(); }
+    Q_INVOKABLE bool born_in_fortress() { return m_age.count() == m_turn_count; }
 
     QString first_name() const {
         return m_first_name;
@@ -649,7 +646,7 @@ private:
     short m_caste_id;
     bool m_show_full_name;
     int m_total_xp;
-    int m_migration_wave;
+    df_time m_arrival_time;
     int m_body_size;
     int m_body_size_base;
     TRAINED_LEVEL m_animal_type;
@@ -694,8 +691,6 @@ private:
     QString m_pending_squad_name; //The name of the squad that the dwarf belongs to (if any)
     QList<quint32> m_unit_flags;
     QList<quint32> m_pending_flags;
-    short m_age;
-    short m_age_in_months;
     uint m_turn_count; // Dwarf turn count from start of fortress (as best we know)
     QHash<QString, float> m_role_ratings;
     QHash<QString, double> m_raw_role_ratings;
@@ -703,10 +698,8 @@ private:
     QList<QPair<QString,float> > m_sorted_custom_role_ratings;
     QHash<QString,QList<QPair<QString,QString> > > m_role_pref_map;
     QHash<short, int> m_states;
-    bool m_born_in_fortress;
-    quint32 m_birth_year;
-    quint32 m_birth_time;
-    quint32 m_ticks_since_birth;
+    std::tuple<df_year, df_tick> m_birth_date;
+    df_time m_age;
     QString m_noble_position;
     bool m_is_pet;
     Race* m_race;

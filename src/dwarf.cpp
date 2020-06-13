@@ -86,7 +86,6 @@ Dwarf::Dwarf(DFInstance *df, VIRTADDR addr, QObject *parent)
     , m_caste_id(-1)
     , m_show_full_name(false)
     , m_total_xp(0)
-    , m_migration_wave(0)
     , m_body_size(60000)
     , m_animal_type(none)
     , m_raw_prof_id(-1)
@@ -386,46 +385,28 @@ void Dwarf::set_validation(QString reason, bool *valid_var, bool valid, LOG_LEVE
 }
 
 void Dwarf::set_age_and_migration(VIRTADDR birth_year_offset, VIRTADDR birth_time_offset){
-    m_birth_year = m_df->read_int(birth_year_offset);
-    m_age = m_df->current_year() - m_birth_year;
-    m_birth_time = m_df->read_int(birth_time_offset);
-    quint32 arrival_time = m_df->current_time() - m_turn_count;
-    quint32 arrival_year = arrival_time / m_df->ticks_per_year;
-    quint32 arrival_season = (arrival_time %  m_df->ticks_per_year) /  m_df->ticks_per_season;
-    quint32 arrival_month = (arrival_time %  m_df->ticks_per_year) /  m_df->ticks_per_month;
-    quint32 arrival_day = ((arrival_time %  m_df->ticks_per_year) %  m_df->ticks_per_month) /  m_df->ticks_per_day;
-    m_ticks_since_birth = m_age *  m_df->ticks_per_year + m_df->current_year_time() - m_birth_time;
-    //this way we have the right sort order and all the data needed for the group by migration wave
-    m_migration_wave = 100000 * arrival_year + 10000 * arrival_season + 100 * arrival_month + arrival_day;
-    m_born_in_fortress = (m_ticks_since_birth == m_turn_count);
-
-    m_age_in_months = m_ticks_since_birth /  m_df->ticks_per_month;
+    m_birth_date = std::tuple<df_year, df_tick>{ // explicit constructor because of GCC 5 bug :(
+        df_year(m_df->read_int(birth_year_offset)),
+        df_tick(m_df->read_int(birth_time_offset))
+    };
+    m_age = m_df->current_time() - df_date_convert<df_time>(m_birth_date);
+    m_arrival_time = m_df->current_time() - df_time(m_turn_count);
 }
 
 QString Dwarf::get_migration_desc(){
-    qint32 wave = m_migration_wave;
-    quint32 season = 0;
-    quint32 year = 0;
-    quint32 month = 0;
-    quint32 day = 0;
-    QString suffix = "th";
-
-    day = (wave % 100) + 1;
-    month = (wave / 100) % 100;
-    season = (wave / 10000) % 10;
-    year = wave / 100000;
-
-    if ((day == 1) || (day == 21))
-        suffix = "st";
-    else if ((day == 2) || (day == 22))
-        suffix = "nd";
-    else if ((day == 3) || (day == 23))
-        suffix = "rd";
-
-    if(m_born_in_fortress){
-        return QString("Born on the %1%4 of %2 in the year %3").arg(day).arg(GameDataReader::ptr()->m_months.at(month)).arg(year).arg(suffix);
-    }else{
-        return QString("Arrived in the %2 of the year %1").arg(year).arg(GameDataReader::ptr()->m_seasons.at(season));
+    if (born_in_fortress()) {
+        auto date = df_date<df_year, df_month, df_day>::make_date(m_arrival_time);
+        return QString("Born on the %1%4 of %2 in the year %3")
+            .arg(std::get<df_day>(date).count())
+            .arg(DFMonths[std::get<df_month>(date).count()])
+            .arg(std::get<df_year>(date).count())
+            .arg(day_suffix(std::get<df_day>(date).count()));
+    }
+    else {
+        auto date = df_date<df_year, df_season>::make_date(m_arrival_time);
+        return QString("Arrived in the %2 of the year %1")
+            .arg(std::get<df_year>(date).count())
+            .arg(DFSeasons[std::get<df_season>(date).count()]);
     }
 }
 
@@ -638,7 +619,7 @@ void Dwarf::find_fake_ident(){
     if(m_hist_figure->has_fake_identity()){
         //save the true name for display
         m_true_name = m_nice_name;
-        m_true_birth_year = m_birth_year;
+        m_true_birth_year = get_birth_year();
         //overwrite the default name, birth year with the assumed identity
         m_first_name = m_hist_figure->fake_name();
         m_nick_name = m_hist_figure->fake_nick_name();
@@ -1910,21 +1891,20 @@ void Dwarf::read_emotions(VIRTADDR personality_base){
     int offset = m_mem->soul_detail("emotions");
     if(offset != -1){
         QVector<VIRTADDR> emotions_addrs = m_df->enumerate_vector(personality_base + offset);
-        //load emotions by date
-        QMap<int,UnitEmotion*> all_emotions;
+        //load emotions and sort by descending date
+        std::vector<std::unique_ptr<UnitEmotion>> all_emotions;
+        all_emotions.reserve(emotions_addrs.count());
         foreach(VIRTADDR addr, emotions_addrs){
-            UnitEmotion *ue = new UnitEmotion(addr,m_df,this);
-            if(ue->get_thought_id() < 0){
-                delete ue;
-            }else{
-                all_emotions.insertMulti(ue->get_date(),ue);
-            }
+            auto ue = std::make_unique<UnitEmotion>(addr, m_df, this);
+            if(ue->get_thought_id() >= 0)
+                all_emotions.push_back(std::move(ue));
         }
+        std::sort(all_emotions.begin(), all_emotions.end(),
+                [](const auto &a, const auto &b) { return a->get_time().count() > b->get_time().count(); });
         //keep the most recent emotion, and discard duplicates, but maintain a count of occurrances
         int thought_id;
         bool duplicate;
-        for(int idx = all_emotions.values().count()-1; idx >= 0; idx--){
-            UnitEmotion *ue = all_emotions.values().at(idx);
+        for (auto &ue: all_emotions) {
             thought_id = ue->get_thought_id();
             //keep a list of all thoughts as well for filtering
             if(!m_thoughts.contains(thought_id))
@@ -1935,13 +1915,12 @@ void Dwarf::read_emotions(VIRTADDR personality_base){
             foreach(UnitEmotion *valid, m_emotions){
                 if(valid->equals(*ue)){
                     valid->increment_count();
-                    delete ue;
                     duplicate = true;
                     break;
                 }
             }
             if(!duplicate){
-                m_emotions.append(ue);
+                m_emotions.append(ue.release());
             }
         }
         all_emotions.clear();
@@ -1952,13 +1931,7 @@ void Dwarf::read_emotions(VIRTADDR personality_base){
 
         int max_weeks = DT->user_settings()->value("options/tooltip_thought_weeks",-1).toInt();
 
-        int last_week_tick = m_df->current_year_time() - (m_df->ticks_per_day * 7 * abs(max_weeks));
-        double max_date = m_df->current_year();
-        if(last_week_tick < 0){
-            max_date -= 1;
-            last_week_tick += m_df->ticks_per_year;
-        }
-        max_date += (last_week_tick / (float)m_df->ticks_per_year);
+        df_time last_week_tick = m_df->current_time() - df_week(abs(max_weeks));
 
         foreach(UnitEmotion *ue, m_emotions){
             int stress_effect = ue->set_effect(stress_vuln);
@@ -1973,8 +1946,7 @@ void Dwarf::read_emotions(VIRTADDR personality_base){
                     .arg(!sign.isNull() ? QString("(%1%2)").arg(sign).arg(abs(stress_effect)) : "")
                     .arg(ue->get_count() > 1 ? QString(" (x%1)").arg(ue->get_count()) : "");
 
-            double emotion_date = ue->get_year() + (ue->get_year_ticks() / (float)m_df->ticks_per_year);
-            if(emotion_date >= max_date){
+            if(ue->get_time() >= last_week_tick){
                 weekly_emotions.append(desc);
             }else if(max_weeks == -1){
                 seasonal_emotions.append(desc); //only show last season message if showing all
@@ -2289,10 +2261,14 @@ short Dwarf::labor_rating(int labor_id) {
 }
 
 QString Dwarf::get_age_formatted(){
-    if(m_age_in_months < 12){
-        return QString::number(m_age_in_months).append(tr(" Month").append(m_age_in_months == 1 ? "" : "s").append(tr(" Old")));
-    }else{
-        return QString::number(m_age).append(tr(" Year").append(m_age == 1 ? "" : "s").append(tr(" Old")));
+    using std::chrono::duration_cast;
+    if (m_age < df_year(1)) {
+        auto age_in_months = duration_cast<df_month>(m_age).count();
+        return QString::number(age_in_months).append(tr(" Month").append(age_in_months == 1 ? "" : "s").append(tr(" Old")));
+    }
+    else {
+        auto age_in_years = duration_cast<df_year>(m_age).count();
+        return QString::number(age_in_years).append(tr(" Year").append(age_in_years == 1 ? "" : "s").append(tr(" Old")));
     }
 }
 

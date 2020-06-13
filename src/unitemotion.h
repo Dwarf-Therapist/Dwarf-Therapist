@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include <QObject>
 #include "global_enums.h"
 #include "utils.h"
+#include "dftime.h"
 
 class DFInstance;
 
@@ -38,8 +39,7 @@ private:
     EMOTION_TYPE m_eType;
     int m_thought_id;
     int m_sub_id;
-    int m_year;
-    int m_year_tick;
+    df_time m_time;
     QString m_desc;
     QString m_desc_colored;
     int m_count;
@@ -49,7 +49,6 @@ private:
     short m_intensifier;
     int m_optional_level; //used for quality, building base wealth, maybe other things
     QString m_compare_id; //id/name used to compare in addition to thought/emotion
-    int m_date_in_ticks;
 
 public:
     UnitEmotion(QObject *parent = 0);
@@ -60,9 +59,7 @@ public:
     int get_sub_id() const {return m_sub_id;}
     int get_optional_level() const {return m_optional_level;}
     QString get_desc(bool colored = true);
-    int get_date() const {return m_date_in_ticks;}
-    int get_year() const {return m_year;}
-    int get_year_ticks() const {return m_year_tick;}
+    df_time get_time() const {return m_time;}
     int get_count() const {return m_count;}
     void increment_count() {m_count++;}
     int set_effect(int stress_vuln);

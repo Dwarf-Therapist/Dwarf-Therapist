@@ -68,11 +68,6 @@ THE SOFTWARE.
 #include "dfinstanceosx.h"
 #endif
 
-quint32 DFInstance::ticks_per_day = 1200;
-quint32 DFInstance::ticks_per_month = 28 * DFInstance::ticks_per_day;
-quint32 DFInstance::ticks_per_season = 3 * DFInstance::ticks_per_month;
-quint32 DFInstance::ticks_per_year = 12 * DFInstance::ticks_per_month;
-
 DFInstance::DFInstance(QObject* parent)
     : QObject(parent)
     , m_base_addr(0)
@@ -83,9 +78,6 @@ DFInstance::DFInstance(QObject* parent)
     , m_heartbeat_timer(new QTimer(this))
     , m_dwarf_race_id(0)
     , m_dwarf_civ_id(0)
-    , m_current_year(0)
-    , m_cur_year_tick(0)
-    , m_cur_time(0)
     , m_status(DFS_DISCONNECTED)
     , m_languages(0x0)
     , m_fortress(0x0)
@@ -822,10 +814,12 @@ void DFInstance::refresh_data(){
     LOGD << "loading current year from" << hexify(current_year);
 
     VIRTADDR current_year_tick = m_layout->global_address("cur_year_tick");
-    m_cur_year_tick = read_int(current_year_tick);
-    m_current_year = read_word(current_year);
-    LOGI << "current year:" << m_current_year;
-    m_cur_time = (int)m_current_year * ticks_per_year + m_cur_year_tick;
+    auto date = std::make_tuple(
+            df_year(read_word(current_year)),
+            df_tick(read_int(current_year_tick)));
+    LOGI << "current year:" << std::get<df_year>(date).count();
+    m_cur_time = df_date_convert<df_time>(date);
+    m_cur_date = df_date<df_year, df_month, df_day>::make_date(m_cur_time);
 
     load_occupations();
     load_activities();
