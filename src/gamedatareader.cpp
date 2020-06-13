@@ -39,9 +39,6 @@ THE SOFTWARE.
 #include <QMessageBox>
 #include <QFile>
 
-QStringList GameDataReader::m_seasons;
-QStringList GameDataReader::m_months;
-
 GameDataReader::GameDataReader(QObject *parent)
     : QObject(parent)
 {
@@ -73,8 +70,6 @@ GameDataReader::GameDataReader(QObject *parent)
             break;
         }
     }
-
-    build_calendar();
 
     QStringList labor_names;
     int labors = m_data_settings->beginReadArray("labors");
@@ -691,28 +686,6 @@ void GameDataReader::load_role_mappings(){
                 labors.append(m_skill_labors.value(skill_id));
         }
         r->set_labors(labors);
-    }
-}
-
-void GameDataReader::build_calendar(){
-    if(m_seasons.length()<=0 || m_months.length()<=0){
-        m_seasons.append(tr("Spring"));
-        m_seasons.append(tr("Summer"));
-        m_seasons.append(tr("Autumn"));
-        m_seasons.append(tr("Winter"));
-
-        m_months.append(tr("Granite"));
-        m_months.append(tr("Slate"));
-        m_months.append(tr("Felsite"));
-        m_months.append(tr("Hematite"));
-        m_months.append(tr("Malachite"));
-        m_months.append(tr("Galena"));
-        m_months.append(tr("Limestone"));
-        m_months.append(tr("Sandstone"));
-        m_months.append(tr("Timber"));
-        m_months.append(tr("Moonstone"));
-        m_months.append(tr("Opal"));
-        m_months.append(tr("Obsidian"));
     }
 }
 

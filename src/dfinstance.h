@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "utils.h"
 #include "global_enums.h"
 #include "truncatingfilelogger.h"
+#include "dftime.h"
 
 #include <QDir>
 #include <QPointer>
@@ -68,11 +69,6 @@ public:
     virtual void find_running_copy() = 0;
     virtual bool df_running() = 0;
 
-    static quint32 ticks_per_day;
-    static quint32 ticks_per_month;
-    static quint32 ticks_per_season;
-    static quint32 ticks_per_year;
-
     typedef enum{
         DFS_DISCONNECTED = -1,
         DFS_CONNECTED,
@@ -88,7 +84,6 @@ public:
     WORD dwarf_race_id() {return m_dwarf_race_id;}
     const std::map<QString, std::unique_ptr<MemoryLayout>> &get_layouts() const { return m_memory_layouts; }
     QDir get_df_dir() { return m_df_dir; }
-    WORD current_year() {return m_current_year;}
     WORD dwarf_civ_id() {return m_dwarf_civ_id;}
     const QStringList status_err_msg();
 
@@ -153,8 +148,8 @@ public:
     virtual int VM_TYPE_OFFSET() {return 0x1;}
 
     static bool authorize();
-    quint32 current_year_time() {return m_cur_year_tick;}
-    quint32 current_time() {return m_cur_time;}
+    df_time current_time() const {return m_cur_time;}
+    std::tuple<df_year, df_month, df_day> current_date() const {return m_cur_date;}
     static DFInstance * newInstance();
 
     // Methods for when we know how the data is layed out
@@ -276,12 +271,11 @@ protected:
     QTimer *m_heartbeat_timer;
     short m_dwarf_race_id;
     int m_dwarf_civ_id;
-    WORD m_current_year;
     QDir m_df_dir;
     QVector<Dwarf*> m_actual_dwarves;
     QVector<Dwarf*> m_labor_capable_dwarves;
-    quint32 m_cur_year_tick;
-    quint32 m_cur_time;
+    df_time m_cur_time;
+    std::tuple<df_year, df_month, df_day> m_cur_date;
     QHash<int,int> m_enabled_labor_count;
     DFI_STATUS m_status;
 

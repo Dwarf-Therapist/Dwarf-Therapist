@@ -151,9 +151,6 @@ public:
     bool default_roles_updated() {return m_def_roles_updated;}
     void default_roles_updated(bool val) {m_def_roles_updated=val;}
 
-    static QStringList m_seasons;
-    static QStringList m_months;
-
 protected:
     GameDataReader(QObject *parent = 0);
     virtual ~GameDataReader();

@@ -150,7 +150,7 @@ void Squad::read_orders(){
     QVector<VIRTADDR> schedules = m_df->enumerate_vector(m_mem->squad_field(m_address, "schedules"));
     int32_t idx = m_df->read_mem<int32_t>(m_mem->squad_field(m_address, "alert"));
     USIZE sched_size = m_mem->squad_offset("sched_size");
-    USIZE month = m_df->current_year_time() / m_df->ticks_per_month;
+    USIZE month = std::get<df_month>(m_df->current_date()).count();
     VIRTADDR base_addr = schedules.at(idx) + (sched_size * month);
     QVector<VIRTADDR> orders = m_df->enumerate_vector(m_mem->squad_field(base_addr, "sched_orders"));
     QVector<VIRTADDR> assigned = m_df->enumerate_vector(m_mem->squad_field(base_addr, "sched_assign"));
