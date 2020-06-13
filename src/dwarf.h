@@ -320,7 +320,8 @@ public:
     Race* get_race() { return m_race; }
 
     //! return this creature's age
-    Q_INVOKABLE short get_age() { return std::chrono::duration_cast<df_year>(m_age).count(); }
+    Q_INVOKABLE int get_age() { return std::chrono::duration_cast<df_year>(m_age).count(); }
+    Q_INVOKABLE int get_age_in_ticks() { return std::chrono::duration_cast<df_tick>(m_age).count(); }
     QString get_age_formatted();
 
     //! return this creature's flag1
