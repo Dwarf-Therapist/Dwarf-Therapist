@@ -25,6 +25,10 @@ mv squashfs-root linuxdeployqt
 
 linuxdeployqt/AppRun "$APPDIR/usr/share/applications/dwarftherapist.desktop" -extra-plugins=styles/libfusiondark.so,styles/libDarkStyle.so -bundle-non-qt-libs -qmake=$QT_PREFIX/bin/qmake
 
+rm "$APPDIR/AppRun"
+wget "https://github.com/AppImage/AppImageKit/releases/download/continuous/AppRun-x86_64" -O "$APPDIR/AppRun"
+chmod +x "$APPDIR/AppRun"
+
 # Download and extract appimagetool
 wget "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
 chmod +x "appimagetool-x86_64.AppImage"
