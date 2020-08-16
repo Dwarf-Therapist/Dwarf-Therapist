@@ -7,11 +7,10 @@
 
 class DFInstance;
 
+// TODO: more cleanup
 class MemoryLayout {
 public:
-    explicit MemoryLayout(DFInstance *df, const QFileInfo &fileinfo);
-    MemoryLayout(DFInstance *df, const QFileInfo &fileinfo, const QSettings &data);
-    ~MemoryLayout();
+    explicit MemoryLayout(const QFileInfo &fileinfo);
 
     typedef enum{
         MEM_UNK = -1,
@@ -100,29 +99,28 @@ public:
         }
     }
 
-    QSettings &data() { return m_data; }
-    QString filename() {return m_fileinfo.fileName();}
-    QString filepath() {return m_fileinfo.absoluteFilePath();}
-    bool is_valid();
-    bool is_complete() {return m_complete;}
-    QString game_version() {return m_game_version;}
-    QString checksum() {return m_checksum;}
-    QString git_sha() {return m_git_sha;}
-    bool is_valid_address(VIRTADDR addr);
+    QString filename() const {return m_fileinfo.fileName();}
+    QString filepath() const {return m_fileinfo.absoluteFilePath();}
+    bool is_valid() const {return m_valid;}
+    bool is_complete() const {return m_complete;}
+    QString game_version() const {return m_game_version;}
+    QString checksum() const {return m_checksum;}
+    QString git_sha() const {return m_git_sha;}
+    bool is_valid_address(VIRTADDR addr) const;
 
-    QHash<QString,VIRTADDR> get_section_offsets(const MEM_SECTION &section) {
+    QHash<QString,VIRTADDR> get_section_offsets(const MEM_SECTION &section) const {
         return m_offsets.value(section);
     }
-    VIRTADDR offset(const MEM_SECTION &section, const QString &name) const{
+    VIRTADDR offset(const MEM_SECTION &section, const QString &name) const {
         return m_offsets.value(section).value(name,-1);
     }
-    QHash<uint,QString> get_flags(const UNIT_FLAG_TYPE &flag_type){
+    QHash<uint,QString> get_flags(const UNIT_FLAG_TYPE &flag_type) const {
         return m_flags.value(flag_type);
     }
 
-    QHash<QString, VIRTADDR> globals() {return get_section_offsets(MEM_GLOBALS);}
+    QHash<QString, VIRTADDR> globals() const {return get_section_offsets(MEM_GLOBALS);}
 
-    VIRTADDR global_address(const QString &key) const;
+    VIRTADDR global_address(const DFInstance *df, const QString &key) const;
 
     qint16 language_offset(const QString &key) const {return offset(MEM_LANGUAGE,key);}
     qint16 dwarf_offset(const QString &key) const {return offset(MEM_UNIT,key);}
@@ -243,25 +241,15 @@ public:
         return field_address(object, MEM_NEED, key);
     }
 
-    QHash<uint, QString> invalid_flags_1() {return get_flags(INVALID_FLAGS_1) ;}
-    QHash<uint, QString> invalid_flags_2() {return get_flags(INVALID_FLAGS_2);}
-    QHash<uint, QString> invalid_flags_3() {return get_flags(INVALID_FLAGS_3);}
-
-    //Setters
-    void set_address(const QString & key, uint value);
-    void set_game_version(const QString & value);
-    void set_checksum(const QString & checksum);
-    void save_data();
-    void set_complete();
+    QHash<uint, QString> invalid_flags_1() const {return get_flags(INVALID_FLAGS_1) ;}
+    QHash<uint, QString> invalid_flags_2() const {return get_flags(INVALID_FLAGS_2);}
+    QHash<uint, QString> invalid_flags_3() const {return get_flags(INVALID_FLAGS_3);}
 
     bool operator<(const MemoryLayout & rhs) const {
         return m_game_version < rhs.m_game_version;
     }
 
-    void load_data();
-
 private:
-    DFInstance *m_df;
     typedef QHash<QString, VIRTADDR> AddressHash;
 
     QHash<MEM_SECTION,AddressHash> m_offsets;
@@ -271,12 +259,11 @@ private:
     QString m_checksum;
     QString m_git_sha;
     QString m_game_version;
-    QSettings m_data;
+    bool m_valid;
     bool m_complete;
 
-    unsigned long long read_hex(QString key);
-    void read_group(const MEM_SECTION &section);
-    void read_flags(const UNIT_FLAG_TYPE &flag_type);
+    void read_group(const MEM_SECTION &section, QSettings &data);
+    void read_flags(const UNIT_FLAG_TYPE &flag_type, QSettings &data);
 };
 Q_DECLARE_METATYPE(MemoryLayout *)
 #endif

@@ -61,8 +61,8 @@ void Languages::load_data() {
     m_language.clear();
     m_words.clear();
 
-    VIRTADDR generic_lang_table = m_mem->global_address("language_vector");
-    VIRTADDR translation_vector = m_mem->global_address("translation_vector");
+    VIRTADDR generic_lang_table = m_mem->global_address(m_df, "language_vector");
+    VIRTADDR translation_vector = m_mem->global_address(m_df, "translation_vector");
     VIRTADDR word_table_offset = m_mem->language_offset("word_table");
     TRACE << "LANGUAGES VECTOR" << hexify(translation_vector);
     TRACE << "GENERIC LANGUAGE VECTOR" << hexify(generic_lang_table);

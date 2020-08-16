@@ -137,6 +137,8 @@ add_executable(DwarfTherapist WIN32 MACOSX_BUNDLE
     src/mainwindow.cpp
     src/material.cpp
     src/memorylayout.cpp
+    src/memorylayoutdialog.cpp
+    src/memorylayoutmanager.cpp
     src/mood.cpp
     src/multilabor.cpp
     src/needcolumn.cpp
@@ -165,7 +167,6 @@ add_executable(DwarfTherapist WIN32 MACOSX_BUNDLE
     src/rotatedheader.cpp
     src/scriptdialog.cpp
     src/searchfiltertreeview.cpp
-    src/selectparentlayoutdialog.cpp
     src/skillcolumn.cpp
     src/skill.cpp
     src/skilllegendwidget.cpp
