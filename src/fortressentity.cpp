@@ -83,7 +83,7 @@ void FortressEntity::read_entity(){
     //load squads
     m_squads = m_df->enum_vec<qint32>(m_mem->hist_entity_field(m_address, "squads"));
 
-    QVector<VIRTADDR> entities = m_df->enumerate_vector(m_mem->global_address("historical_entities_vector"));
+    QVector<VIRTADDR> entities = m_df->enumerate_vector(m_mem->global_address(m_df, "historical_entities_vector"));
     QHash<int, position> positions;
     QString unk_name = tr("Unknown");
     position pos_unk = {unk_name,unk_name,unk_name,m_noble_colors.value(MULTIPLE)};

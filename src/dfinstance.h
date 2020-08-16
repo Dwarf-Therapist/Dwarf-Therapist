@@ -79,10 +79,8 @@ public:
     // accessors
     VIRTADDR df_base_addr() const {return m_base_addr;}
     const QString df_checksum() {return m_df_checksum;}
-    static QString layout_subdir();
     DFI_STATUS status() const {return m_status;}
     WORD dwarf_race_id() {return m_dwarf_race_id;}
-    const std::map<QString, std::unique_ptr<MemoryLayout>> &get_layouts() const { return m_memory_layouts; }
     QDir get_df_dir() { return m_df_dir; }
     WORD dwarf_civ_id() {return m_dwarf_civ_id;}
     const QStringList status_err_msg();
@@ -128,11 +126,8 @@ public:
     QString pprint(const QByteArray &ba);
 
     // Memory layouts
-    MemoryLayout *memory_layout() {return m_layout;}
+    MemoryLayout *memory_layout() {return m_layout.get();}
     void set_memory_layout(QString checksum = QString());
-    MemoryLayout *get_memory_layout(QString checksum);
-    MemoryLayout *find_memory_layout(QString git_sha);
-    bool add_new_layout(const QString & filename, const QString data, QString &result_msg);
 
     USIZE pointer_size() const { return m_pointer_size; }
 
@@ -266,7 +261,7 @@ protected:
     VIRTADDR m_base_addr;
     QString m_df_checksum;
     USIZE m_pointer_size;
-    MemoryLayout *m_layout;
+    std::unique_ptr<MemoryLayout> m_layout;
     int m_attach_count;
     QTimer *m_heartbeat_timer;
     short m_dwarf_race_id;
@@ -284,11 +279,6 @@ protected:
     void load_population_data();
     void load_role_ratings();
     bool check_vector(VIRTADDR start, VIRTADDR end, VIRTADDR addr);
-
-    /*! this map will hold all loaded and valid memory layouts found
-        on disk, the key is a QString of the checksum since other OSs will use
-        an MD5 of the binary instead of a PE timestamp */
-    std::map<QString, std::unique_ptr<MemoryLayout>> m_memory_layouts; // checksum->layout
 
     static PID select_pid(QSet<PID> pids);
 

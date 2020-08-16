@@ -1,6 +1,6 @@
 /*
 Dwarf Therapist
-Copyright (c) 2009 Trey Stout (chmod)
+Copyright (c) 2020 Clement Vuchener
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,31 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef DEFINES_H
-#define DEFINES_H
 
-#define DEFAULT_CELL_SIZE 16
-#define DEFAULT_SPACER_WIDTH 4
+#ifndef MEMORY_LAYOUT_DIALOG_H
+#define MEMORY_LAYOUT_DIALOG_H
 
-#define ERROR_NO_VALID_LAYOUTS 500
+#include <QDialog>
+#include <memory>
 
-#define GLOBAL_SORT_COL_IDX 1
+namespace Ui { class MemoryLayoutDialog; }
+class MemoryLayoutManager;
+class Updater;
 
-#define REPO_OWNER "Dwarf-Therapist"
-#define REPO_NAME "Dwarf-Therapist"
+class MemoryLayoutDialog: public QDialog
+{
+    Q_OBJECT
+public:
+    MemoryLayoutDialog(MemoryLayoutManager *memory_layouts,
+                       Updater *updater,
+                       QWidget *parent = nullptr);
+    ~MemoryLayoutDialog() override;
 
-#ifdef Q_OS_WIN
-#   define LAYOUT_SUBDIR "windows"
-#elif defined(Q_OS_LINUX)
-#   define LAYOUT_SUBDIR "linux"
-#elif defined(Q_OS_MAC)
-#   define LAYOUT_SUBDIR "osx"
-#endif
+private:
+    void show_context_menu(const QPoint &pos) const;
+
+    std::unique_ptr<Ui::MemoryLayoutDialog> ui;
+    MemoryLayoutManager *m_memory_layouts;
+};
 
 #endif

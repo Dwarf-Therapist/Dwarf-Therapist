@@ -380,6 +380,7 @@
     <addaction name="act_go_latest_release"/>
     <addaction name="act_go_forums"/>
     <addaction name="act_go_new_issue"/>
+    <addaction name="act_memory_layouts"/>
     <addaction name="separator"/>
     <addaction name="act_about"/>
     <addaction name="act_check_update"/>
@@ -1288,6 +1289,14 @@
     <string>Open directory containing log files in the file explorer</string>
    </property>
   </action>
+  <action name="act_memory_layouts">
+   <property name="text">
+    <string>Memory layouts</string>
+   </property>
+   <property name="toolTip">
+    <string>Show loaded memory layouts</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -1856,6 +1865,22 @@
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
    <slot>open_log_dir()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>629</x>
+     <y>257</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>act_memory_layouts</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>show_memory_layouts()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>

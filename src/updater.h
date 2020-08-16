@@ -1,6 +1,6 @@
 /*
 Dwarf Therapist
-Copyright (c) 2009 Trey Stout (chmod)
+Copyright (c) 2020 Clement Vuchener
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,42 +25,33 @@ THE SOFTWARE.
 #define UPDATER_H
 
 #include <QObject>
+#include <QNetworkAccessManager>
 #include <QNetworkReply>
+
 #include "notifierwidget.h"
+#include "version.h"
 
-class DFInstance;
-struct Version;
-
-class Updater : public QObject {
+class Updater: public QObject {
     Q_OBJECT
 public:
-    Updater(QObject *parent = 0);
-    ~Updater();
-
-    QString last_updated_checksum(){return m_last_updated_checksum;}
+    Updater(QObject *parent = nullptr);
+    ~Updater() override;
 
 public slots:
-    bool network_accessible(const QString &name);
-    void check_latest_version(bool notify_on_ok = true);
-    void version_check_finished();
-    void check_layouts(DFInstance *df);
-    void layout_downloaded();
-    void update_error(QNetworkReply::NetworkError);
+    void check_for_updates();
 
 signals:
     void notify(NotifierWidget::notify_info);
+    void latest_version(const Version &version, const QString &url);
+    void layout_update_data(const QString &name, const QString &git_sha, const QByteArray &data);
 
-protected:
-    DFInstance *m_df;
+private:
+    void network_error(QNetworkReply::NetworkError);
+    void ssl_errors(const QList<QSslError> &);
+    void latest_release_received();
+    void layout_list_received();
+
     QNetworkAccessManager m_network;
-    QHash<QString,int> m_layout_queue;
-    QString m_last_updated_checksum;
-
-    bool load_manifest(QNetworkReply *reply, QVariant &manifest_object);
-    QStringList find_layout_urls(QNetworkReply *reply);
-    void load_latest_version(QNetworkReply *reply, Version &latest_version, QString &url);
-    void load_layout_data(QString data, QStringList &list, QRegExp rx);
-    void show_notification(QNetworkReply *reply);
-
 };
-#endif // UPDATER_H
+
+#endif

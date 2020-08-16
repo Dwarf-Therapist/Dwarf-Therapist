@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "dwarfmodel.h"
 #include "dwarfmodelproxy.h"
 #include "memorylayout.h"
+#include "memorylayoutmanager.h"
 #include "viewmanager.h"
 #include "viewcolumnset.h"
 #include "customprofession.h"
@@ -59,6 +60,7 @@ THE SOFTWARE.
 #include "standardpaths.h"
 #include "rolepreferencemodel.h"
 #include "defaultroleweight.h"
+#include "memorylayoutdialog.h"
 
 #include <QCompleter>
 #include <QDesktopServices>
@@ -96,8 +98,17 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    m_updater = new Updater(this);
-    m_notifier = new NotifierWidget(this);
+    m_updater = std::make_unique<Updater>();
+    m_notifier = std::make_unique<NotifierWidget>(this);
+    connect(m_updater.get(), &Updater::notify,
+            m_notifier.get(), &NotifierWidget::add_notification);
+    connect(m_updater.get(), &Updater::latest_version,
+            this, &MainWindow::latest_version_info);
+    connect(m_updater.get(), &Updater::layout_update_data,
+            DT->get_memory_layouts(), &MemoryLayoutManager::updateMemoryLayout);
+    connect(DT->get_memory_layouts(), &MemoryLayoutManager::memoryLayoutUpdated,
+            this, &MainWindow::memory_layout_update);
+
     m_view_manager = new ViewManager(m_model, m_proxy, this);
     ui->v_box->addWidget(m_view_manager);
     setCentralWidget(ui->main_widget);
@@ -233,9 +244,8 @@ MainWindow::MainWindow(QWidget *parent)
     refresh_role_menus();
     refresh_opts_menus();
 
-    if(m_settings->value("options/check_for_updates_on_startup", true).toBool()){
-        m_updater->check_latest_version(false);
-    }
+    if(m_settings->value("options/check_for_updates_on_startup", true).toBool())
+        m_updater->check_for_updates();
 
     //if any custom roles were altered due to an update, save them
     if(GameDataReader::ptr()->custom_roles_updated()){
@@ -298,8 +308,6 @@ MainWindow::~MainWindow() {
     delete m_optimize_plan_editor;
     delete m_dwarf_name_completer;
 
-    delete m_updater;
-    delete m_notifier;
     delete m_model;
     delete m_view_manager;
     delete m_proxy;
@@ -337,13 +345,6 @@ void MainWindow::connect_to_df() {
         show_dc_dialog = (sender() != m_retry_connection);
     }
 
-    //don't spam notifications on auto-retry connections
-    if(!show_dc_dialog){
-        disconnect(m_updater,SIGNAL(notify(NotifierWidget::notify_info)),m_notifier,SLOT(add_notification(NotifierWidget::notify_info)));
-    }else{
-        connect(m_updater,SIGNAL(notify(NotifierWidget::notify_info)),m_notifier,SLOT(add_notification(NotifierWidget::notify_info)),Qt::UniqueConnection);
-    }
-
     LOGI << "attempting connection to running DF game";
     if (m_df) {
         LOGI << "already connected, disconnecting";
@@ -358,15 +359,6 @@ void MainWindow::connect_to_df() {
     if(m_df){
         //attempt to connect to the process first
         m_df->find_running_copy();
-
-        //once connected, update any memory layouts as required
-        if(m_df->status() == DFInstance::DFS_CONNECTED || (
-                                                      m_updater->last_updated_checksum() != m_df->df_checksum() &&
-                                                      m_settings->value("options/check_for_updates_on_startup", true).toBool())){
-            //add/update layouts as required
-            m_updater->check_layouts(m_df);
-            m_df->set_memory_layout();
-        }
 
         if(m_df->status() == DFInstance::DFS_GAME_LOADED){
             LOGI << "Connection to DF version" << m_df->memory_layout()->game_version() << "established.";
@@ -821,9 +813,13 @@ void MainWindow::go_to_latest_release() {
     QDesktopServices::openUrl(QUrl(QString("%1/releases/latest").arg(DT->project_homepage())));
 }
 void MainWindow::check_latest_version(){
-    if(m_updater){
-        m_updater->check_latest_version();
-    }
+    if(m_updater)
+        m_updater->check_for_updates();
+}
+
+void MainWindow::show_memory_layouts() {
+    MemoryLayoutDialog dialog(DT->get_memory_layouts(), m_updater.get());
+    dialog.exec();
 }
 
 void MainWindow::open_data_dir() {
@@ -833,8 +829,8 @@ void MainWindow::open_data_dir() {
     if (!data_dir.exists())
         data_dir.mkpath(".");
     for (auto dirname: {
-            QString("gridviews"),
-            QString("memory_layouts/%1").arg(DFInstance::layout_subdir()) }) {
+            "gridviews",
+            "memory_layouts/" LAYOUT_SUBDIR }) {
         if (!data_dir.exists(dirname))
             data_dir.mkpath(dirname);
     }
@@ -1673,5 +1669,50 @@ void MainWindow::moveEvent(QMoveEvent *evt){
     QMainWindow::moveEvent(evt);
     if(m_notifier){
         m_notifier->reposition();
+    }
+}
+
+void MainWindow::latest_version_info(const Version &latest, const QString &url)
+{
+    if (m_notifier) {
+        if (Version() < latest) {
+            m_notifier->add_notification({
+                    tr("New Version Available"),
+                    tr("Dwarf Therapist %1").arg(latest.to_string()),
+                    url,
+                    tr("Click here to download"),
+                    false
+                    });
+        }
+        else {
+            m_notifier->add_notification({
+                    tr("Latest Version"),
+                    tr("This version is the latest release."),
+                    {}, {}, false});
+        }
+    }
+}
+
+void MainWindow::memory_layout_update(const MemoryLayout &layout)
+{
+    if (m_notifier) {
+        m_notifier->add_notification({
+                tr("Memory Layout updated"),
+                tr("Downloaded memory layout for %1").arg(layout.game_version()),
+                QUrl::fromLocalFile(layout.filepath()).toString(),
+                tr("Open file"),
+                false});
+    }
+    if (m_df && m_df->status() != DFInstance::DFS_DISCONNECTED && m_df->df_checksum() == layout.checksum()) {
+        auto choice = QMessageBox::question(this,
+                tr("Memory layout updated"),
+                tr("The memory layout for the current version of "
+                   "Dwarf Fortress has been updated. Do you want to "
+                   "re-connect now? (Pending changes will be lost)"));
+        if (choice == QMessageBox::Yes) {
+            m_model->clear_all(true);
+            m_df->disconnect();
+            connect_to_df();
+        }
     }
 }

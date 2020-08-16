@@ -46,6 +46,7 @@ class LogManager;
 class CellColorDef;
 class MainWindow;
 class DFInstance;
+class MemoryLayoutManager;
 
 class DwarfTherapist : public QApplication {
     Q_OBJECT
@@ -81,6 +82,7 @@ public:
 
     LogManager *get_log_manager() {return m_log_mgr;}
     DFInstance *get_DFInstance();
+    MemoryLayoutManager *get_memory_layouts() { return m_memory_layouts.get(); }
 
     QSharedPointer<CellColorDef> get_global_color(GLOBAL_COLOR_TYPES gc_type);
     QColor get_happiness_color(DWARF_HAPPINESS h) {return m_happiness_colors.value(h,QColor(Qt::transparent));}
@@ -135,6 +137,7 @@ private:
     std::unique_ptr<QSettings> m_user_settings;
     MainWindow *m_main_window;
     OptionsMenu *m_options_menu;
+    std::unique_ptr<MemoryLayoutManager> m_memory_layouts;
 
     bool m_allow_labor_cheats;
     bool m_hide_non_adults;

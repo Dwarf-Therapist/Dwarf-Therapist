@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include <memory>
 
 #include "global_enums.h"
+#include "version.h"
 
 class AboutDialog;
 class DFInstance;
@@ -46,6 +47,7 @@ class ViewManager;
 class optimizereditor;
 class RoleDialog;
 class GridViewWidget;
+class MemoryLayout;
 
 namespace Ui
 {
@@ -121,6 +123,7 @@ public slots:
     void go_to_new_issue();
     void go_to_latest_release();
     void check_latest_version();
+    void show_memory_layouts();
     void open_data_dir();
     void open_log_dir();
 
@@ -154,6 +157,10 @@ public slots:
     void refresh_active_scripts();
     void clear_filter();
 
+    //updates
+    void latest_version_info(const Version &, const QString &);
+    void memory_layout_update(const MemoryLayout &);
+
 private:
     DFInstance *m_df;
     QLabel *m_lbl_status;
@@ -183,8 +190,8 @@ private:
     QToolButton *m_btn_optimize;
     QTimer *m_retry_connection;
 
-    Updater *m_updater;
-    NotifierWidget *m_notifier;
+    std::unique_ptr<Updater> m_updater;
+    std::unique_ptr<NotifierWidget> m_notifier;
 
     void showEvent(QShowEvent *evt);
     void closeEvent(QCloseEvent *evt);

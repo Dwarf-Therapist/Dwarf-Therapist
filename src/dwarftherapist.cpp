@@ -42,6 +42,7 @@ THE SOFTWARE.
 #include "dtstandarditem.h"
 #include "cellcolordef.h"
 #include "standardpaths.h"
+#include "memorylayoutmanager.h"
 #include <QMessageBox>
 #include <QSettings>
 #include <QStyleFactory>
@@ -114,6 +115,9 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
 
     TRACE << "Creating settings object";
     m_user_settings = StandardPaths::settings();
+
+    TRACE << "Loading memory layouts";
+    m_memory_layouts = std::make_unique<MemoryLayoutManager>();
 
     TRACE << "Creating options menu";
     m_options_menu = new OptionsMenu;
@@ -606,8 +610,8 @@ void DwarfTherapist::load_game_translation_tables(DFInstance *df) {
     m_generic_words.clear();
     m_dwarf_words.clear();
 
-    VIRTADDR generic_lang_table = df->memory_layout()->global_address("language_vector");
-    VIRTADDR translation_vector = df->memory_layout()->global_address("translation_vector");
+    VIRTADDR generic_lang_table = df->memory_layout()->global_address(df, "language_vector");
+    VIRTADDR translation_vector = df->memory_layout()->global_address(df, "translation_vector");
     VIRTADDR word_table_offset = df->memory_layout()->language_offset("word_table");
     TRACE << "LANGUAGES VECTOR" << hexify(translation_vector);
     TRACE << "GENERIC LANGUAGE VECTOR" << hexify(generic_lang_table);
