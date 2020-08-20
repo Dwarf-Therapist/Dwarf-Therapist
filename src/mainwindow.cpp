@@ -245,7 +245,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->cb_group_by->addItem(tr("Age"), DwarfModel::GB_AGE);
     ui->cb_group_by->addItem(tr("Caste"), DwarfModel::GB_CASTE);
     ui->cb_group_by->addItem(tr("Current Job"), DwarfModel::GB_CURRENT_JOB);
-    ui->cb_group_by->addItem(tr("Goals"), DwarfModel::GB_GOALS);
+    ui->cb_group_by->addItem(tr("Goal Type"), DwarfModel::GB_GOAL_TYPE);
+    ui->cb_group_by->addItem(tr("Goals Realized"), DwarfModel::GB_GOALS_REALIZED);
     ui->cb_group_by->addItem(tr("Happiness"), DwarfModel::GB_HAPPINESS);
     ui->cb_group_by->addItem(tr("Has Nickname"),DwarfModel::GB_HAS_NICKNAME);
     ui->cb_group_by->addItem(tr("Health"),DwarfModel::GB_HEALTH);

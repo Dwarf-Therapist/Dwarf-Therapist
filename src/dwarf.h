@@ -582,6 +582,7 @@ public:
     Q_INVOKABLE bool has_goal(int goal_id){return m_goals.contains(goal_id);}
     //! number of goals realized
     Q_INVOKABLE int goals_realized(){return m_goals_realized;}
+    Q_INVOKABLE QString get_goal_summary() const;
 
     //! returns a list of items, grouped by body part name
     QHash<QString,QList<Item*> > get_inventory_grouped(){return m_inventory_grouped;}
