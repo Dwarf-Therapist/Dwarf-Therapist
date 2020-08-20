@@ -225,7 +225,7 @@ void DwarfModel::build_rows() {
         }
     }
     foreach(Dwarf *d, m_dwarves) {
-	d->m_name_idx = QModelIndex();
+        d->m_name_idx = QModelIndex();
     }
 
     clear();
@@ -344,7 +344,9 @@ void DwarfModel::build_rows() {
                     m_grouped_dwarves[tr("Losers")].append(d);
             }else if(m_group_by == GB_HAPPINESS){
                 m_grouped_dwarves[d->happiness_name(d->get_happiness())].append(d);
-            }else if(m_group_by == GB_GOALS){
+            }else if(m_group_by == GB_GOAL_TYPE){
+                m_grouped_dwarves[d->get_goal_summary()].append(d);
+            }else if(m_group_by == GB_GOALS_REALIZED){
                 m_grouped_dwarves[tr("%1 Goals Realized").arg(d->goals_realized())].append(d);
             }else if(m_group_by == GB_OCCUPATION){
                 m_grouped_dwarves[d->occupation()].append(d);
@@ -457,7 +459,9 @@ void DwarfModel::build_row(const QString &key) {
             }
         } else if (m_group_by == GB_TOTAL_SKILL_LEVELS) {
             agg_first_col->setData(first_dwarf->total_skill_levels(), DR_SORT_VALUE);
-        } else if (m_group_by == GB_GOALS) {
+        } else if (m_group_by == GB_GOAL_TYPE) {
+            agg_first_col->setData(first_dwarf->get_goal_summary(), DR_SORT_VALUE);
+        } else if (m_group_by == GB_GOALS_REALIZED) {
             agg_first_col->setData(first_dwarf->goals_realized(), DR_SORT_VALUE);
         } else if (m_group_by == GB_OCCUPATION) {
             //keep no occupation at the top/bottom

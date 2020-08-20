@@ -1366,6 +1366,44 @@ QString Dwarf::happiness_name(DWARF_HAPPINESS happiness) {
     }
 }
 
+QString Dwarf::get_goal_summary() const {
+    GameDataReader *gdr = GameDataReader::ptr();
+    if (m_goals.size() == 1) {
+        auto goal = m_goals.begin();
+        return gdr->get_goal_desc(goal.key(), goal.value() != 0);
+    }
+    else if (m_goals.size() > 1) {
+        QString goal_summary;
+        bool separator = false;
+        if (m_goals_realized < m_goals.size()) {
+            for (auto goal = m_goals.begin(); goal != m_goals.end(); ++goal) {
+                if (goal.value() == 0) {
+                    if (separator) {
+                        goal_summary.append(tr(". "));
+                    }
+                    else {
+                        separator = true;
+                    }
+                    goal_summary.append(gdr->get_goal_desc(goal.key(), false));
+                }
+            }
+        }
+        if (m_goals_realized > 0) {
+            if (separator) {
+                goal_summary.append(tr(". "));
+            }
+            else {
+                separator = true;
+            }
+            goal_summary.append(tr("One or more dreams realized"));
+        }
+        return goal_summary;
+    }
+    else {
+        return gdr->get_goal_desc(0, false);
+    }
+}
+
 int Dwarf::get_need_type_focus(int need_id) const
 {
     auto r = m_needs.equal_range(need_id);
