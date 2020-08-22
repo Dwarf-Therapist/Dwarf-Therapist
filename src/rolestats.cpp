@@ -157,7 +157,8 @@ RoleStatsStratifiedMAD::RoleStatsStratifiedMAD(double invalid_value)
 
 double RoleStatsStratifiedMAD::get_rating(double val) const
 {
-    return cdf(val, m_median, m_stratified_mad);
+    double factor = val < m_median ? m_factor_low : m_factor_high;
+    return cdf(val, m_median, m_stratified_mad / factor);
 }
 
 void RoleStatsStratifiedMAD::set_list(const QVector<double> &unsorted)
@@ -178,6 +179,19 @@ void RoleStatsStratifiedMAD::set_list(const QVector<double> &unsorted)
         m_stratified_mad += (k[i+1]-k[i])*(p[i+1]-p[i]);
     m_stratified_mad = std::sqrt(m_stratified_mad);
     LOGV << "     - stratified MAD:" << m_stratified_mad;
+
+    m_factor_low = m_factor_high = 0.0;
+    for (double v: m_valid) {
+        double z = (v - m_median) / m_stratified_mad;
+        if (z > 0.0)
+            m_factor_high += z;
+        else
+            m_factor_low += -z;
+    }
+    double average_factor = (m_factor_low + m_factor_high) / 2.0;
+    m_factor_low /= average_factor;
+    m_factor_high /= average_factor;
+    LOGV << "     - Factor low/high:" << m_factor_low << m_factor_high;
 }
 
 template<typename Parent>

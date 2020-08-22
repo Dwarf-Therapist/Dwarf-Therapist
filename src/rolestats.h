@@ -66,6 +66,7 @@ public:
 
 private:
     double m_stratified_mad;
+    double m_factor_low, m_factor_high;
 };
 
 // Same as parent but valid values ratings are transformed between 50%
