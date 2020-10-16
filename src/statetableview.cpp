@@ -42,6 +42,7 @@ THE SOFTWARE.
 #include "labor.h"
 #include "defaultfonts.h"
 #include "dtstandarditem.h"
+#include "fortressentity.h"
 
 #include <QContextMenuEvent>
 #include <QInputDialog>
@@ -135,6 +136,7 @@ StateTableView::StateTableView(QWidget *parent)
     m->addSeparator();
 
     squads_menu = new QMenu(m);
+    nobles_menu = new QMenu(m);
     m_unassign_squad = new QAction(QIcon(QString::fromUtf8(":/img/minus-circle.png")),"",m);
     m->addSeparator();
     debug_menu = new QMenu(m);
@@ -259,6 +261,7 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
 
         //remove any dynamically changed menus
         m->removeAction(squads_menu->menuAction());
+        m->removeAction(nobles_menu->menuAction());
         m->removeAction(debug_menu->menuAction());
         m->removeAction(m_unassign_squad);
 
@@ -271,6 +274,17 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
 
             refresh_update_c_prof_menu(d);
 
+            // Nobles menu
+            nobles_menu->setTitle(tr("Assign noble position..."));
+            nobles_menu->clear();
+            nobles_menu->setEnabled(true);
+            for (const auto &p: m_model->get_instance()->fortress()->get_noble_assignments()) {
+                auto action = nobles_menu->addAction(p.second.name, this, SLOT(assign_noble()));
+                action->setData(p.first);
+            }
+            m->addMenu(nobles_menu);
+
+            // Squads menu
             if(d->can_assign_military()){
                 if(m_model->active_squads().count() <= 0){
                     squads_menu->setTitle(tr("No squads found."));
@@ -556,6 +570,21 @@ void StateTableView::assign_to_squad(){
             new_squad->assign_to_squad(d);
     }
     disconnect(new_squad,SIGNAL(squad_leader_changed()),this,SLOT(emit_squad_leader_changed()));
+    m_model->calculate_pending();
+    DT->get_main_window()->get_view_manager()->redraw_current_tab();
+}
+
+void StateTableView::assign_noble(){
+    QAction *a = qobject_cast<QAction*>(QObject::sender());
+    int assignment_id = a->data().toInt();
+    const QModelIndexList sel = selected_units();
+    if(sel.count() <= 0)
+        return;
+    foreach(QModelIndex i, sel) {
+        int id = i.data(DwarfModel::DR_ID).toInt();
+        Dwarf *d = m_model->get_dwarf_by_id(id);
+        d->add_noble_assignment(assignment_id);
+    }
     m_model->calculate_pending();
     DT->get_main_window()->get_view_manager()->redraw_current_tab();
 }

@@ -78,7 +78,7 @@ void FortressEntity::read_entity(){
 //    m_name = m_df->get_language_word(m_address + 0x14);
 //    m_translated_name = m_df->get_translated_word(m_address + 0x14);
 
-    m_id = m_df->read_int(m_address + m_df->pointer_size());
+    m_id = m_df->read_int(m_address + 4); // TODO: use memory layout
     m_histfigs = m_df->enum_vec<qint32>(m_mem->hist_entity_field(m_address, "histfigs"));
     //load squads
     m_squads = m_df->enum_vec<qint32>(m_mem->hist_entity_field(m_address, "squads"));
@@ -120,10 +120,13 @@ void FortressEntity::read_entity(){
             //may be better to check all the different responsibility flags and other flags like succession/appointed etc
             //to get profiles of the different nobility types
             foreach(VIRTADDR assign, addr_assignments){
+                int assignment_id = m_df->read_int(assign);
                 assign_pos_id = m_df->read_int(m_mem->hist_entity_field(assign, "assign_position_id")); //position for the assignment
+                position p = positions.value(assign_pos_id, pos_unk);
+                if (ent == m_address) // only keep assignment for the fortress
+                    m_noble_assignments.emplace(assignment_id, p);
                 hist_id = m_df->read_int(m_mem->hist_entity_field(assign, "assign_hist_id")); //dwarf assigned
                 if(hist_id > 0){
-                    position p = positions.value(assign_pos_id, pos_unk);
                     m_nobles.insert(hist_id,p);
                 }
             }
