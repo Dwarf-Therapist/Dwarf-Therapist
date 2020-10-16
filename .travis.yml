@@ -24,6 +24,7 @@ matrix:
             - libglu1-mesa-dev
       env:
         - CMAKE_GENERATOR=Ninja
+        - CXXFLAGS="-Wall -Wextra -Werror=all"
     - os: osx
       env:
         - CMAKE_OSX_DEPLOYMENT_TARGET=10.9
@@ -41,6 +42,7 @@ matrix:
         - CMAKE_OSX_DEPLOYMENT_TARGET=10.13
         - QT_VERSION=5.15.0
         - CMAKE_GENERATOR=Ninja
+        - CXXFLAGS="-Wall -Wextra -Werror=all"
     - os: windows
       env:
         - QT_VERSION=5.12.8
@@ -72,7 +74,6 @@ before_install:
 script:
   - export SOURCE_DIR=$TRAVIS_BUILD_DIR
   - export BINARY_DIR=$TRAVIS_BUILD_DIR/build
-  - if [ "$TRAVIS_OS_NAME" != windows ]; then export CXXFLAGS="-Wall -Wextra -Werror=all"; fi
   - if [ "$CMAKE_GENERATOR" = Ninja ]; then export CMAKE_BUILD_TYPE=Release; fi
   - cmake --version
   - cmake -DCMAKE_PREFIX_PATH="$QT_PREFIX" -S "$SOURCE_DIR" -B "$BINARY_DIR"
