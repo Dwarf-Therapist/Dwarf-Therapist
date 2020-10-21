@@ -1386,15 +1386,10 @@ QString DFInstance::get_artifact_name(ITEM_TYPE itype, int item_id){
 
     if(itype == ARTIFACTS){
         VIRTADDR addr = m_mapped_items.value(itype).value(item_id);
-        if(addr){
-            QString name = get_language_word(addr+0x4); //TODO: offset
-            if(name.isEmpty()){
-                name = read_string(addr+0x4);
-            }
-            return name;
-        }else{
+        if(addr)
+            return get_language_word(m_layout->item_field(addr, "artifact_name"));
+        else
             return "";
-        }
     }else{
         return "";
     }
@@ -1402,10 +1397,9 @@ QString DFInstance::get_artifact_name(ITEM_TYPE itype, int item_id){
 
 void DFInstance::index_item_vector(ITEM_TYPE itype){
     QHash<int,VIRTADDR> items;
-    int offset = m_layout->item_offset("id");
-    if(itype == ARTIFACTS){
-        offset = 0x0;
-    }
+    int offset = itype == ARTIFACTS
+        ? m_layout->item_offset("artifact_id")
+        : m_layout->item_offset("id");
     foreach(VIRTADDR addr, m_items_vectors.value(itype)){
         items.insert(read_int(addr+offset),addr);
     }
