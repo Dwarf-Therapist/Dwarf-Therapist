@@ -28,6 +28,7 @@ http://www.opensource.org/licenses/mit-license.php
 #include <QFileInfo>
 #include <QDir>
 #include <QDebug>
+#include <stdexcept>
 
 LogManager::LogManager(QObject *parent)
     : QObject(parent)
