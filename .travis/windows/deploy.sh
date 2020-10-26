@@ -27,9 +27,4 @@ cmake --install "$BINARY_DIR" --prefix "$dest"
 mkdir "$dest/doc"
 cp "Dwarf Therapist.pdf" "$dest/doc/"
 
-if [ "$QT_ARCH" = win32_msvc2015 ]; then
-    wget "https://indy.fulgan.com/SSL/openssl-1.0.2u-i386-win32.zip" -O openssl.zip
-    7z e openssl.zip libeay32.dll ssleay32.dll -o"$dest"
-fi
-
 7z a "$dest.zip" "$dest/"
