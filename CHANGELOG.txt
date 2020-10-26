@@ -1,3 +1,17 @@
+### Version 41.2.0 Patch Notes
+
+***
+ - added new goal types
+ - added group by goal type
+ - changed color picker widget
+ - changed default happiness colors
+ - save column width in some windows (needs, preferences, details)
+ - added in-game date in window title
+ - new memory layout updater
+ - fixed sorting by age
+ - fixed artifact names
+ - fixed "restore default" in options dialog
+
 ### Version 41.1.7 Patch Notes
 
 ***
