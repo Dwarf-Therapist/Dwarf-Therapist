@@ -10,7 +10,7 @@ matrix:
       addons:
         apt:
           sources:
-            - sourceline: 'ppa:beineri/opt-qt-5.12.8-xenial'
+            - sourceline: 'ppa:beineri/opt-qt-5.12.10-xenial'
             - sourceline: 'deb https://apt.kitware.com/ubuntu/ xenial main'
               key_url: 'https://apt.kitware.com/keys/kitware-archive-latest.asc'
           packages:
@@ -34,28 +34,27 @@ matrix:
       osx_image: xcode10.3
       env:
         - CMAKE_OSX_DEPLOYMENT_TARGET=10.12
-        - QT_VERSION=5.12.8
+        - QT_VERSION=5.12.10
         - CMAKE_GENERATOR=Ninja
     - os: osx
       osx_image: xcode11.3
       env:
         - CMAKE_OSX_DEPLOYMENT_TARGET=10.13
-        - QT_VERSION=5.15.0
+        - QT_VERSION=5.15.2
         - CMAKE_GENERATOR=Ninja
         - CXXFLAGS="-Wall -Wextra -Werror=all"
     - os: windows
       env:
-        - QT_VERSION=5.12.8
+        - QT_VERSION=5.12.10
         - QT_ARCH=win64_msvc2017_64
         - CMAKE_GENERATOR="Visual Studio 15 2017"
         - CMAKE_GENERATOR_PLATFORM=x64
     - os: windows
       env:
-        - QT_VERSION=5.6.3
-        - QT_ARCH=win32_msvc2015
+        - QT_VERSION=5.12.10
+        - QT_ARCH=win32_msvc2017
         - CMAKE_GENERATOR="Visual Studio 15 2017"
         - CMAKE_GENERATOR_PLATFORM=Win32
-        - CMAKE_GENERATOR_TOOLSET=v140_xp
 before_install:
   - ".travis/$TRAVIS_OS_NAME/install_deps.sh"
   - |
