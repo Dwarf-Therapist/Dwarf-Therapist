@@ -29,19 +29,16 @@ matrix:
       env:
         - CMAKE_OSX_DEPLOYMENT_TARGET=10.9
         - QT_VERSION=5.9.9
-        - CMAKE_GENERATOR=Ninja
     - os: osx
       osx_image: xcode10.3
       env:
         - CMAKE_OSX_DEPLOYMENT_TARGET=10.12
         - QT_VERSION=5.12.10
-        - CMAKE_GENERATOR=Ninja
     - os: osx
       osx_image: xcode11.3
       env:
         - CMAKE_OSX_DEPLOYMENT_TARGET=10.13
         - QT_VERSION=5.15.2
-        - CMAKE_GENERATOR=Ninja
         - CXXFLAGS="-Wall -Wextra -Werror=all"
     - os: windows
       env:
