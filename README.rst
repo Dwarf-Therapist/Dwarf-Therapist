@@ -29,7 +29,7 @@ The manual for Dwarf Therapist can be downloaded separately.
 
 Building
 ========
-Dwarf-Therapist requires a C++ compiler (with C++14 support), cmake (3.1.0 or newer), and Qt5 (with Widgets and QML modules).
+Dwarf-Therapist requires a C++ compiler (with C++14 support), cmake (3.1.0 or newer), and Qt5 (5.9 or newer, with Widgets and QML and Network modules).
 
 Detailed building instructions can be found in `BUILDING.md`_.
 

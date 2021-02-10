@@ -33,8 +33,6 @@ THE SOFTWARE.
 #include "standardpaths.h"
 #include "truncatingfilelogger.h"
 
-#include "qt_compat.h"
-
 Updater::Updater(QObject *parent)
     : QObject(parent)
 {

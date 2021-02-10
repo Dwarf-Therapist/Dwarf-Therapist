@@ -34,7 +34,7 @@ THE SOFTWARE.
 //#include <QLoggingCategory>
 
 int main(int argc, char *argv[]) {
-#if defined(Q_OS_MAC) && QT_VERSION >= QT_VERSION_CHECK(5,3,0)
+#if defined(Q_OS_MAC)
     QCoreApplication::setSetuidAllowed(true);
 #endif
 

@@ -265,9 +265,7 @@ bool DFInstanceOSX::authorize() {
         fflush(stdout); // Often causes SIGPIPE.
 
         // Authorization for remote memory access on OS X trips Qt's setuid detection
-        #if defined(Q_OS_MAC) && QT_VERSION >= QT_VERSION_CHECK(5,3,0)
         QCoreApplication::setSetuidAllowed(true);
-        #endif
         return true;
     }
 

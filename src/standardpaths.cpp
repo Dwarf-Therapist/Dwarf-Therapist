@@ -26,12 +26,6 @@ THE SOFTWARE.
 #include <QStandardPaths>
 #include <QCoreApplication>
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 4, 0))
-static constexpr auto AppDataLocation = QStandardPaths::AppDataLocation;
-#else
-static constexpr auto AppDataLocation = QStandardPaths::DataLocation;
-#endif
-
 constexpr StandardPaths::Mode StandardPaths::DefaultMode;
 
 StandardPaths::Mode StandardPaths::mode;
@@ -111,7 +105,7 @@ QString StandardPaths::locate_data(const QString &filename)
             return QString();
     case Mode::Standard:
     default:
-        return QStandardPaths::locate(AppDataLocation, filename);
+        return QStandardPaths::locate(QStandardPaths::AppDataLocation, filename);
     }
 }
 
@@ -124,7 +118,7 @@ QStringList StandardPaths::data_locations()
         return { custom_datadir.path(), source_datadir.path() };
     case Mode::Standard:
     default:
-        return QStandardPaths::standardLocations(AppDataLocation);
+        return QStandardPaths::standardLocations(QStandardPaths::AppDataLocation);
     }
 }
 
@@ -136,7 +130,7 @@ QString StandardPaths::writable_data_location()
         return custom_datadir.path();
     case Mode::Standard:
     default:
-        return QStandardPaths::writableLocation(AppDataLocation);
+        return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     }
 }
 
@@ -181,12 +175,12 @@ QStringList StandardPaths::doc_locations()
     case Mode::Standard:
     default: {
 #if (defined Q_OS_WIN)
-        auto dirs = QStandardPaths::standardLocations(AppDataLocation);
+        auto dirs = QStandardPaths::standardLocations(QStandardPaths::AppDataLocation);
         for (auto &dir: dirs)
             dir += "/doc";
         return dirs;
 #elif (defined Q_OS_OSX)
-        return QStandardPaths::standardLocations(AppDataLocation);
+        return QStandardPaths::standardLocations(QStandardPaths::AppDataLocation);
 #elif (defined Q_OS_LINUX)
         auto dirs = QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation);
         for (auto &dir: dirs)
