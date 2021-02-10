@@ -73,7 +73,7 @@ script:
   - if [ "$CMAKE_GENERATOR" = Ninja ]; then export CMAKE_BUILD_TYPE=Release; fi
   - cmake --version
   - cmake -DCMAKE_PREFIX_PATH="$QT_PREFIX" -S "$SOURCE_DIR" -B "$BINARY_DIR"
-  - cmake --build "$TRAVIS_BUILD_DIR/build" --parallel 4 --config Release
+  - cmake --build "$BINARY_DIR" --parallel 4 --config Release
 notifications:
   irc:
     on_success: change
