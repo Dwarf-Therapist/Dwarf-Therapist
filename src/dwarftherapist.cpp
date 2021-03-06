@@ -164,11 +164,21 @@ DwarfTherapist::~DwarfTherapist(){
 }
 
 MainWindow* DwarfTherapist::get_main_window(){
-    return m_main_window;
+    if (!m_main_window) {
+        for (auto widget: topLevelWidgets())
+            if (auto main_window = qobject_cast<MainWindow *>(widget))
+                return main_window;
+        return nullptr;
+    }
+    else
+        return m_main_window;
 }
 
 DFInstance* DwarfTherapist::get_DFInstance(){
-    return m_main_window->get_DFInstance();
+    if (m_main_window)
+        return m_main_window->get_DFInstance();
+    else
+        return nullptr;
 }
 
 void DwarfTherapist::setup_logging(const QString &path, bool debug_logging, bool trace_logging) {
