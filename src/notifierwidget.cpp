@@ -76,9 +76,9 @@ void NotifierWidget::reposition(){
         QPoint mainwindow_br = this->parentWidget()->frameGeometry().bottomRight();
         //padding to set it above the status bar
         QSize pad(12,32);
-        if(DT->get_main_window()->statusBar()){
-            pad.setHeight(DT->get_main_window()->statusBar()->height()+10);
-        }
+        if (auto main_window = DT->get_main_window())
+            if (main_window->statusBar())
+                pad.setHeight(main_window->statusBar()->height()+10);
         mainwindow_br.setY(mainwindow_br.y()-pad.height());
         mainwindow_br.setX(mainwindow_br.x()-pad.width());
         QRect this_geo = this->frameGeometry();
