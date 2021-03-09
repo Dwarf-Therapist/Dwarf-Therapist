@@ -27,17 +27,12 @@ matrix:
         - CXXFLAGS="-Wall -Wextra -Werror=all"
     - os: osx
       env:
-        - CMAKE_OSX_DEPLOYMENT_TARGET=10.9
+        - MACOSX_DEPLOYMENT_TARGET=10.9
         - QT_VERSION=5.9.9
-    - os: osx
-      osx_image: xcode10.3
-      env:
-        - CMAKE_OSX_DEPLOYMENT_TARGET=10.12
-        - QT_VERSION=5.12.10
     - os: osx
       osx_image: xcode11.3
       env:
-        - CMAKE_OSX_DEPLOYMENT_TARGET=10.13
+        - MACOSX_DEPLOYMENT_TARGET=10.13
         - QT_VERSION=5.15.2
         - CXXFLAGS="-Wall -Wextra -Werror=all"
     - os: windows
