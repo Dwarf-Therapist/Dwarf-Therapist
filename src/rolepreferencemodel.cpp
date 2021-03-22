@@ -280,6 +280,8 @@ void RolePreferenceModel::load_pref_from_raws(QWidget *parent)
         beginResetModel();
         clear_exact_prefs(m_prefs);
 
+        m_df->attach();
+
         // non-plant and non-creature materials
         for (Material *m: m_df->get_inorganic_materials())
             add_material(m);
@@ -327,6 +329,8 @@ void RolePreferenceModel::load_pref_from_raws(QWidget *parent)
                 }
             }
         }
+
+        m_df->detach();
 
         m_loaded_raws = true;
         endResetModel();
