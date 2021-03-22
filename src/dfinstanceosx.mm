@@ -79,42 +79,39 @@ DFInstanceOSX::DFInstanceOSX(QObject* parent)
 }
 
 DFInstanceOSX::~DFInstanceOSX() {
-    if(m_attach_count > 0) {
-        detach();
-    }
 }
 
 bool DFInstanceOSX::attach() {
     kern_return_t result;
-    if(m_attach_count > 0) {
-        m_attach_count++;
+    int attach_count = m_attach_count++;
+    if (attach_count > 0)
         return true;
-    }
 
     // reacquire dropped privileges
     if (-1 == seteuid(0)) {
         int err = errno;
         LOGE << "seteuid(0) failed:" << strerror(err);
+        m_attach_count--;
         return false;
     }
 
     result = task_suspend(m_task);
     if ( result != KERN_SUCCESS ) {
+        m_attach_count--;
         return false;
     }
-    m_attach_count++;
     return true;
 }
 
 bool DFInstanceOSX::detach() {
     kern_return_t result;
+    int attach_count = --m_attach_count;
 
-    if( m_attach_count == 0 ) {
+    if (attach_count > 0)
         return true;
-    }
-
-    m_attach_count--;
-    if( m_attach_count > 0 ) {
+    if (attach_count < 0) {
+        LOGE << "Attempted to detach while the instance was not attached";
+        m_attach_count++;
         return true;
     }
 
