@@ -50,9 +50,6 @@ DFInstanceLinux::DFInstanceLinux(QObject* parent)
 }
 
 DFInstanceLinux::~DFInstanceLinux() {
-    if (m_attach_count > 0) {
-        detach();
-    }
 }
 
 int DFInstanceLinux::wait_for_stopped() {
@@ -75,36 +72,41 @@ int DFInstanceLinux::wait_for_stopped() {
 }
 
 bool DFInstanceLinux::attach() {
-    TRACE << "STARTING ATTACH" << m_attach_count;
-    if (is_attached()) {
-        m_attach_count++;
-        TRACE << "ALREADY ATTACHED SKIPPING..." << m_attach_count;
+    int attach_count = m_attach_count++;
+    TRACE << "STARTING ATTACH" << attach_count;
+    if (attach_count > 0) {
+        TRACE << "ALREADY ATTACHED SKIPPING..." << attach_count;
         return true;
     }
 
     if (ptrace(PTRACE_ATTACH, m_pid, 0, 0) == -1) { // unable to attach
         LOGE << "attach:" << strerror(errno) << "attaching to PID" << m_pid;
+        m_attach_count--;
         return false;
     }
 
     wait_for_stopped();
 
-    m_attach_count++;
-    TRACE << "FINISHED ATTACH" << m_attach_count;
-    return m_attach_count > 0;
+    TRACE << "FINISHED ATTACH" << attach_count;
+    return true;
 }
 
 bool DFInstanceLinux::detach() {
-    //TRACE << "STARTING DETACH" << m_attach_count;
-    m_attach_count--;
-    if (m_attach_count > 0) {
-        TRACE << "NO NEED TO DETACH SKIPPING..." << m_attach_count;
+    int attach_count = --m_attach_count;
+    //TRACE << "STARTING DETACH" << attach_count;
+    if (attach_count > 0) {
+        TRACE << "NO NEED TO DETACH SKIPPING..." << attach_count;
+        return true;
+    }
+    if (attach_count < 0) {
+        LOGE << "Attempted to detach while the instance was not attached";
+        m_attach_count++;
         return true;
     }
 
     ptrace(PTRACE_DETACH, m_pid, 0, 0);
-    TRACE << "FINISHED DETACH" << m_attach_count;
-    return m_attach_count > 0;
+    TRACE << "FINISHED DETACH" << attach_count;
+    return true;
 }
 
 USIZE DFInstanceLinux::read_raw(const VIRTADDR addr, const USIZE bytes, void *buffer) {

@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include <QDir>
 #include <QPointer>
 #include <memory>
+#include <atomic>
 
 #ifdef Q_OS_WIN
 typedef int PID;
@@ -137,7 +138,6 @@ public:
     virtual USIZE write_string(VIRTADDR addr, const QString &str) = 0;
     USIZE write_int(VIRTADDR addr, int val);
 
-    bool is_attached() {return m_attach_count > 0;}
     virtual bool attach() = 0;
     virtual bool detach() = 0;
     virtual int VM_TYPE_OFFSET() {return 0x1;}
@@ -262,7 +262,7 @@ protected:
     QString m_df_checksum;
     USIZE m_pointer_size;
     std::unique_ptr<MemoryLayout> m_layout;
-    int m_attach_count;
+    std::atomic_int m_attach_count;
     QTimer *m_heartbeat_timer;
     short m_dwarf_race_id;
     int m_dwarf_civ_id;
