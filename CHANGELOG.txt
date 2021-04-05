@@ -1,3 +1,10 @@
+### Version 41.2.2 Patch Notes
+
+***
+ - fixed "take it easy" need description
+ - fixed attaching to DF when loading preferences from the role editor dialog
+ - fixed a crash on startup when there is no internet access
+
 ### Version 41.2.1 Patch Notes
 
 ***
