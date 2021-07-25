@@ -136,7 +136,7 @@ void Syndrome::load_attribute_changes(VIRTADDR addr, int start_idx, int count, i
     int idx_offset = 0;
     int idx = 0;
     for(idx = 0; idx <=count; idx++){
-        idx_offset = m_df->pointer_size() * idx;
+        idx_offset = 4 * idx;
         syn_att_change att_change;
         att_change.percent = m_df->read_int(m_mem->syndrome_field(addr, "cie_first_perc")+idx_offset);
         att_change.added = m_df->read_int(addr+add_offset+idx_offset);
