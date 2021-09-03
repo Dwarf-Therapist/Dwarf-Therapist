@@ -1134,11 +1134,10 @@ void Dwarf::check_availability(){
     }
 
     //check squad assignment
-    if(is_adult()){
-        m_can_assign_military = m_is_citizen || m_occ_type == OCC_MERC;
-    }else{
+    if (m_raw_profession && (m_is_citizen || m_occ_type == OCC_MERC) && !m_locked_mood)
+        m_can_assign_military = (is_adult() && m_raw_profession->can_assign_military()) || DT->labor_cheats_allowed();
+    else
         m_can_assign_military = false;
-    }
 }
 
 void Dwarf::read_current_job(){
