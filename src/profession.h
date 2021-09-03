@@ -35,6 +35,7 @@ public:
         , m_female_name(m_name)
         , m_is_military(false)
         , m_can_assign_labors(true)
+        , m_can_assign_military(true)
     {
     }
 
@@ -44,15 +45,17 @@ public:
         , m_female_name(s.value("female_name", m_name).toString())
         , m_is_military(s.value("is_military", false).toBool())
         , m_can_assign_labors(s.value("can_assign_labors", true).toBool())
+        , m_can_assign_military(s.value("can_assign_military", true).toBool())
     {
     }
 
-    const short &id() const {return m_id;}
-    QString name(const bool &male = true) const {
+    short id() const {return m_id;}
+    QString name(bool male = true) const {
         return male ? m_name : m_female_name;
     }
-    const bool &is_military() const {return m_is_military;}
-    const bool &can_assign_labors() const {return m_can_assign_labors;}
+    bool is_military() const {return m_is_military;}
+    bool can_assign_labors() const {return m_can_assign_labors;}
+    bool can_assign_military()  const {return m_can_assign_military;}
 
     bool operator<(const Profession &other) const {
         return m_name < other.m_name;
@@ -64,6 +67,7 @@ private:
     QString m_female_name;
     bool m_is_military;
     bool m_can_assign_labors;
+    bool m_can_assign_military;
 };
 
 #endif // PROFESSION_H
