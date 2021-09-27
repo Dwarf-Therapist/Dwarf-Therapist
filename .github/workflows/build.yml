@@ -1,0 +1,74 @@
+name: build
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-18.04
+            qt_version: 5.12.11
+            qt_host: linux
+            cxxflags: '-Wall -Wextra -Werror=all'
+          - os: windows-latest
+            qt_version: 5.12.11
+            qt_host: windows
+            qt_arch: win64_msvc2017_64
+            cmake_generator: Visual Studio 16 2019
+            cmake_generator_platform: x64
+          - os: windows-latest
+            qt_version: 5.12.11
+            qt_host: windows
+            qt_arch: win32_msvc2017
+            cmake_generator: Visual Studio 16 2019
+            cmake_generator_platform: Win32
+          - os: macos-latest
+            qt_version: 5.15.2
+            qt_host: mac
+            macosx_deployment_target: 10.13
+            cxxflags: '-Wall -Wextra -Werror=all'
+          - os: macos-latest
+            qt_version: 5.9.9
+            qt_host: mac
+            macosx_deployment_target: 10.9
+    runs-on: ${{matrix.os}}
+    env:
+      MACOSX_DEPLOYMENT_TARGET: ${{matrix.macosx_deployment_target}}
+      CMAKE_GENERATOR: ${{matrix.cmake_generator}}
+      CMAKE_GENERATOR_PLATFORM: ${{matrix.cmake_generator_platform}}
+      CXXFLAGS: ${{matrix.cxxflags}}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2
+        with:
+          version: ${{matrix.qt_version}}
+          host: ${{matrix.qt_host}}
+          arch: ${{matrix.qt_arch}}
+      - name: Configure CMake
+        run: cmake -B ${{github.workspace}}/build
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build --config Release
+      - name: Download Manual
+        if: startsWith(github.ref, 'refs/tags/')
+        run: curl 'https://github.com/Dwarf-Therapist/Manual/releases/download/v23.2beta/Dwarf.Therapist.Manual.zip' -L -o manual.zip && unzip manual.zip
+      - name: Create package
+        if: startsWith(github.ref, 'refs/tags/')
+        run: ./.github/scripts/${{runner.os}}/package.sh
+        shell: bash
+        env:
+          SOURCE_DIR: .
+          BINARY_DIR: ${{github.workspace}}/build
+          QT_VERSION: ${{matrix.qt_version}}
+          QT_ARCH: ${{matrix.qt_arch}}
+      - name: Upload package
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: DwarfTherapist-*.*
