@@ -123,9 +123,9 @@ RolePreferenceModel::RolePreferenceModel(QObject *parent)
                 ITEMS_QUERN, NO_STONE_STOCKPILE);
         }
     }
-    for (const auto t: {std::make_tuple(tr("Parchments"), PRESSED, "PARCHMENT"),
-                        std::make_tuple(tr("Paper plants"), PRESSED, "PAPER_PLANT"),
-                        std::make_tuple(tr("Papers"), PRESSED, "PAPER_SLURRY")}) {
+    for (const auto &t: {std::make_tuple(tr("Parchments"), PRESSED, "PARCHMENT"),
+                         std::make_tuple(tr("Paper plants"), PRESSED, "PAPER_PLANT"),
+                         std::make_tuple(tr("Papers"), PRESSED, "PAPER_SLURRY")}) {
         auto title = std::get<0>(t);
         auto state = std::get<1>(t);
         auto reaction = std::get<2>(t);
