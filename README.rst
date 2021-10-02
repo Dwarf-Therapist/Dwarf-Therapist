@@ -2,11 +2,6 @@
 Dwarf Therapist
 ===============
 
-.. image:: https://travis-ci.org/Dwarf-Therapist/Dwarf-Therapist.svg?branch=master
-   :target: https://travis-ci.org/Dwarf-Therapist/Dwarf-Therapist
-.. image:: https://scan.coverity.com/projects/13797/badge.svg
-   :target: https://scan.coverity.com/projects/dwarf-therapist-dwarf-therapist
-
 This is the maintained version of `Splintermind's Dwarf Therapist`_ (itself a heavily modified version of the `original Dwarf Therapist`_).
 
 The Dwarf Therapist guide source and releases have `their own repository <https://github.com/Dwarf-Therapist/Manual>`_.
