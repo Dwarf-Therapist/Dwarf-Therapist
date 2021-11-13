@@ -242,6 +242,10 @@ void MemoryLayoutManager::updateMemoryLayout(const QString &name, const QString 
         // No user file, create it
         QFileInfo fi(StandardPaths::writable_data_location() + "/memory_layouts/" + LAYOUT_SUBDIR + "/" + name);
         LOGI << "Adding new memory layout" << fi.absoluteFilePath();
+        if (!fi.dir().exists() && !fi.dir().mkpath(".")) {
+            LOGE << "Failed to create memory layouts directory " << fi.dir().absolutePath();
+            return;
+        }
         QFile file(fi.absoluteFilePath());
 #if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
         auto mode = QIODevice::NewOnly;
