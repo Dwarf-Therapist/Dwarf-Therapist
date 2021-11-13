@@ -185,20 +185,11 @@ void MemoryLayoutManager::updateMemoryLayout(const QString &name, const QString 
             [&checksum](const auto &version) {
                 return version.checksum == checksum;
             });
-    if (it == m_layouts.end()) {
-        auto name = QRegularExpression("version_name\\s*=\\s*(.*)\\s*$", QRegularExpression::MultilineOption)
-                .match(str)
-                .captured(1);
-        LOGD << "New game version" << name;
-        beginInsertRows({}, m_layouts.size(), m_layouts.size());
-        it = m_layouts.insert(it, version_info{checksum, name, {}, nullptr});
-        endInsertRows();
-    }
-    int row = std::distance(m_layouts.begin(), it);
-    auto parent = index(row, 0);
 
+    auto parent = QModelIndex();
     file_info *user = nullptr, *system = nullptr;
-    if (!it->files.empty()) {
+    if (it != m_layouts.end() && !it->files.empty()) {
+        parent = index(std::distance(m_layouts.begin(), it), 0);
         if (it->files[0].writable) {
             user = &it->files[0];
             if (it->files.size() > 1)
@@ -255,6 +246,16 @@ void MemoryLayoutManager::updateMemoryLayout(const QString &name, const QString 
         if (!file.open(mode) || file.write(data) == -1) {
             LOGE << "Failed to add" << fi.absoluteFilePath();
             return;
+        }
+        if (it == m_layouts.end()) { // if this version did not exists, add it
+            auto name = QRegularExpression("version_name\\s*=\\s*(.*)\\s*$", QRegularExpression::MultilineOption)
+                    .match(str)
+                    .captured(1);
+            LOGD << "New game version" << name;
+            beginInsertRows({}, m_layouts.size(), m_layouts.size());
+            it = m_layouts.insert(it, version_info{checksum, name, {}, nullptr});
+            endInsertRows();
+            parent = index(std::distance(m_layouts.begin(), it), 0);
         }
         beginInsertRows(parent, 0, 0);
         it->files.insert(it->files.begin(), {fi, git_sha, true});
