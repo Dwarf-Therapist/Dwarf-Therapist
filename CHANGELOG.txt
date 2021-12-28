@@ -1,3 +1,11 @@
+### Version 41.2.3 Patch Notes
+
+***
+ - fixed attribute values when changed by a syndrome
+ - fixed professions that should not be assignable to squad (e.g. merchants)
+ - fixed downloading memory layout when the destination directory did not exist
+ - fixed updater reporting a supported version after failing to create the memory layout
+
 ### Version 41.2.2 Patch Notes
 
 ***
