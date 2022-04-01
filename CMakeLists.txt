@@ -17,8 +17,8 @@ if(${DT_VERSION} MATCHES "^([0-9]+)\\.([0-9]+)\\.([0-9]+)(-(.*))?$")
 else()
     message(FATAL_ERROR "Failed to parse version string: ${DT_VERSION}")
 endif()
-configure_file(./src/version.h.in ${CMAKE_BINARY_DIR}/src/version.h @ONLY)
-configure_file(./lnp/manifest.json.in ${CMAKE_BINARY_DIR}/lnp/manifest.json @ONLY)
+configure_file(${DwarfTherapist_SOURCE_DIR}/src/version.h.in ${CMAKE_BINARY_DIR}/src/version.h @ONLY)
+configure_file(${DwarfTherapist_SOURCE_DIR}/lnp/manifest.json.in ${CMAKE_BINARY_DIR}/lnp/manifest.json @ONLY)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -218,14 +218,16 @@ endif()
 
 if(UNIX AND NOT APPLE)
     # Installation is currently Linux-only
-    install(TARGETS DwarfTherapist
-            RUNTIME DESTINATION bin)
     if (BUILD_PORTABLE)
+        install(TARGETS DwarfTherapist
+                RUNTIME DESTINATION dwarf-therapist/bin)
         install(DIRECTORY share/
-                DESTINATION share)
+                DESTINATION dwarf-therapist/share)
         install(FILES LICENSE.txt README.rst
-                DESTINATION share/doc)
+                DESTINATION dwarf-therapist/share/doc)
     else()
+        install(TARGETS DwarfTherapist
+                RUNTIME DESTINATION bin)
         install(DIRECTORY share/
                 DESTINATION share/dwarftherapist)
         install(FILES LICENSE.txt README.rst
