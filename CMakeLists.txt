@@ -17,8 +17,8 @@ if(${DT_VERSION} MATCHES "^([0-9]+)\\.([0-9]+)\\.([0-9]+)(-(.*))?$")
 else()
     message(FATAL_ERROR "Failed to parse version string: ${DT_VERSION}")
 endif()
-configure_file(${CMAKE_SOURCE_DIR}/src/version.h.in ${CMAKE_BINARY_DIR}/src/version.h @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/lnp/manifest.json.in ${CMAKE_BINARY_DIR}/lnp/manifest.json @ONLY)
+configure_file(src/version.h.in src/version.h @ONLY)
+configure_file(lnp/manifest.json.in lnp/manifest.json @ONLY)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -27,7 +27,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(Qt5 REQUIRED COMPONENTS Qml Widgets Concurrent)
 
-include_directories(src ${CMAKE_BINARY_DIR}/src thirdparty/qtcolorpicker-2.6)
+include_directories(src ${CMAKE_CURRENT_BINARY_DIR}/src thirdparty/qtcolorpicker-2.6)
 
 if(WIN32)
     add_definitions(-DUNICODE -D_UNICODE -DNOMINMAX)
@@ -239,6 +239,6 @@ elseif(WIN32)
             RUNTIME DESTINATION .)
     install(DIRECTORY share/
             DESTINATION data)
-    install(FILES LICENSE.txt README.rst CHANGELOG.txt ${CMAKE_BINARY_DIR}/lnp/manifest.json
+    install(FILES LICENSE.txt README.rst CHANGELOG.txt ${CMAKE_CURRENT_BINARY_DIR}/lnp/manifest.json
             DESTINATION .)
 endif()
