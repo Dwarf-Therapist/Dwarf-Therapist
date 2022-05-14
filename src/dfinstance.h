@@ -339,6 +339,7 @@ private:
 
     void load_hist_figures();
     void load_occupations();
+    void load_identities();
     void index_item_vector(ITEM_TYPE itype);
     void send_connection_interrupted();
 };

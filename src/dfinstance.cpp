@@ -785,6 +785,7 @@ void DFInstance::refresh_data(){
     m_cur_date = df_date<df_year, df_month, df_day>::make_date(m_cur_time);
 
     load_occupations();
+    load_identities();
     load_activities();
     load_fortress();
     load_squads(true);
@@ -1219,8 +1220,6 @@ void DFInstance::load_occupations(){
 }
 
 VIRTADDR DFInstance::find_identity(int id){
-    if(m_fake_identities.count() == 0) //lazy load fake identities
-        m_fake_identities = enumerate_vector(m_layout->global_address(this, "fake_identities_vector"));
     foreach(VIRTADDR ident, m_fake_identities){
         int fake_id = read_int(ident);
         if(fake_id==id){
@@ -1228,6 +1227,10 @@ VIRTADDR DFInstance::find_identity(int id){
         }
     }
     return 0;
+}
+
+void DFInstance::load_identities(){
+    m_fake_identities = enumerate_vector(m_layout->global_address(this, "fake_identities_vector"));
 }
 
 VIRTADDR DFInstance::find_event(int id){
