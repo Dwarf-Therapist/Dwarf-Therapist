@@ -12,19 +12,19 @@ jobs:
       matrix:
         include:
           - os: ubuntu-18.04
-            qt_version: 5.12.11
+            qt_version: 5.15.2
             qt_host: linux
             cxxflags: '-Wall -Wextra -Werror=all'
           - os: windows-latest
-            qt_version: 5.12.11
+            qt_version: 5.15.2
             qt_host: windows
-            qt_arch: win64_msvc2017_64
+            qt_arch: win64_msvc2019_64
             cmake_generator: Visual Studio 17 2022
             cmake_generator_platform: x64
           - os: windows-latest
-            qt_version: 5.12.11
+            qt_version: 5.15.2
             qt_host: windows
-            qt_arch: win32_msvc2017
+            qt_arch: win32_msvc2019
             cmake_generator: Visual Studio 17 2022
             cmake_generator_platform: Win32
           - os: macos-latest
