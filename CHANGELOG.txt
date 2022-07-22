@@ -1,3 +1,8 @@
+### Version 41.2.4 Patch Notes
+
+***
+ - fixed fake identities for new migrants
+
 ### Version 41.2.3 Patch Notes
 
 ***
