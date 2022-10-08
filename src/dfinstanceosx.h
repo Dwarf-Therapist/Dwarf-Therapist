@@ -51,6 +51,7 @@ protected:
     bool set_pid();
 
 private:
+    bool drop_privileges() const;
     VIRTADDR alloc_chunk(USIZE size);
     VIRTADDR m_alloc_start, m_alloc_end;
     int m_alloc_remaining, m_size_allocated;

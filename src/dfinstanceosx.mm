@@ -30,10 +30,11 @@ THE SOFTWARE.
 #include "dfinstanceosx.h"
 #include "defines.h"
 #include "dwarf.h"
-#include "utils.h"
 #include "gamedatareader.h"
 #include "memorylayout.h"
+#include "standardpaths.h"
 #include "truncatingfilelogger.h"
+#include "utils.h"
 #include <stdio.h>
 #include <mach/vm_map.h>
 #include <mach/mach_traps.h>
@@ -71,9 +72,7 @@ DFInstanceOSX::DFInstanceOSX(QObject* parent)
     }
 
     // temporarily drop privileges
-    if (-1 == seteuid(m_ruid)) {
-        int err = errno;
-        LOGE << "seteuid failed:" << strerror(err);
+    if (!drop_privileges()) {
         return;
     }
 }
@@ -121,9 +120,7 @@ bool DFInstanceOSX::detach() {
     }
 
     // temporarily drop privileges
-    if (-1 == seteuid(m_ruid)) {
-        int err = errno;
-        LOGE << "seteuid failed:" << strerror(err);
+    if (!drop_privileges()) {
         return false;
     }
     return true;
@@ -177,9 +174,7 @@ bool DFInstanceOSX::set_pid(){
     [authPool release];
 
     // temporarily drop privileges
-    if (-1 == seteuid(m_ruid)) {
-        int err = errno;
-        LOGE << "seteuid failed:" << strerror(err);
+    if (!drop_privileges()) {
         return false;
     }
 
@@ -319,6 +314,24 @@ bool DFInstanceOSX::authorize() {
     // http://developer.apple.com/documentation/Security/Conceptual/authorization_concepts/02authconcepts/chapter_2_section_7.html
     status = AuthorizationFree(authorizationRef, kAuthorizationFlagDestroyRights);
     return false;
+}
+
+bool DFInstanceOSX::drop_privileges() const {
+    // Make sure the settings file is not owned by root.
+    auto s = StandardPaths::settings();
+    QByteArray fileName = s->fileName().toUtf8();
+    if (-1 == chown(fileName.data(), m_ruid, -1)) {
+        int err = errno;
+        LOGE << "chown of" << fileName << "failed:" << strerror(err);
+    }
+
+    if (-1 == seteuid(m_ruid)) {
+        int err = errno;
+        LOGE << "seteuid failed:" << strerror(err);
+        return false;
+    }
+
+    return true;
 }
 
 bool DFInstanceOSX::isAuthorized() {

@@ -26,10 +26,6 @@ THE SOFTWARE.
 #include <QStandardPaths>
 #include <QCoreApplication>
 
-#ifdef Q_OS_OSX
-#include <unistd.h>
-#endif
-
 constexpr StandardPaths::Mode StandardPaths::DefaultMode;
 
 StandardPaths::Mode StandardPaths::mode;
@@ -75,12 +71,11 @@ void StandardPaths::init_paths(Mode mode, QString source_datadir)
 
 std::unique_ptr<QSettings> StandardPaths::settings()
 {
-    std::unique_ptr<QSettings> qSettings;
     switch (mode) {
     case Mode::Portable:
     case Mode::Developer: {
         auto ini_file = QString("%1.ini").arg(QCoreApplication::applicationName());
-        qSettings = std::make_unique<QSettings>(custom_configdir.filePath(ini_file),
+        return std::make_unique<QSettings>(custom_configdir.filePath(ini_file),
                                            QSettings::IniFormat);
     }
     case Mode::Standard:
@@ -88,17 +83,10 @@ std::unique_ptr<QSettings> StandardPaths::settings()
         // Organization is not set on Linux/Windows to avoid issue with QStandardPaths
         // using "orgname/appname" folder instead "packagename". Force QSettings
         // to use the application name for the configuration directory.
-        qSettings = std::make_unique<QSettings>(QSettings::IniFormat, QSettings::UserScope,
-                                                QCoreApplication::applicationName(),
-                                                QCoreApplication::applicationName());
+        return std::make_unique<QSettings>(QSettings::IniFormat, QSettings::UserScope,
+                                           QCoreApplication::applicationName(),
+                                           QCoreApplication::applicationName());
     }
-
-#ifdef Q_OS_OSX
-    QByteArray fileName = qSettings->fileName().toLocal8Bit();
-    chown(fileName.data(), getuid(), getgid());
-#endif
-
-    return qSettings;
 }
 
 QString StandardPaths::locate_data(const QString &filename)
