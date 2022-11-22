@@ -509,7 +509,7 @@ void Dwarf::read_gender_orientation() {
     if (show_orientation)
         gender_desc << get_orientation_desc(m_gender_info.orientation);
     if (show_commitment) {
-        static const QStringList preferences = { tr("Not interested in %1"), tr("Likes %1"), tr("Will marry %1") };
+        static const QStringList preferences = { tr("Not interested in %1"), tr("Likes %1"), tr("Prefers %1") };
         for (const auto &t: {
                 std::make_tuple(m_gender_info.male, tr("males")),
                 std::make_tuple(m_gender_info.female, tr("females")) }) {
