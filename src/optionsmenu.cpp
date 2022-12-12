@@ -133,7 +133,8 @@ OptionsMenu::OptionsMenu(QWidget *parent)
 
     ui->cb_gender_info->addItem(tr("Sex only"), Dwarf::Option_SexOnly);
     ui->cb_gender_info->addItem(tr("Show orientation"), Dwarf::Option_ShowOrientation);
-    ui->cb_gender_info->addItem(tr("Show orientation + commitment"), Dwarf::Option_ShowCommitment);
+    // hide commitment until it is better understood
+    //ui->cb_gender_info->addItem(tr("Show orientation + commitment"), Dwarf::Option_ShowCommitment);
 
     ui->cb_skill_drawing_method->addItem("Growing Center Box", UberDelegate::SDM_GROWING_CENTRAL_BOX);
     ui->cb_skill_drawing_method->addItem("Line Glyphs", UberDelegate::SDM_GLYPH_LINES);
@@ -306,6 +307,8 @@ void OptionsMenu::read_settings() {
     show_current_font(temp,ui->lbl_current_main_font);
 
     idx = ui->cb_gender_info->findData(s->value("gender_info", Dwarf::Option_ShowOrientation));
+    if (idx == -1) // fallback to default if stored setting has been removed
+        idx = ui->cb_gender_info->findData(Dwarf::Option_ShowOrientation);
     ui->cb_gender_info->setCurrentIndex(idx);
 
     ui->cb_read_dwarves_on_startup->setChecked(s->value("read_on_startup", true).toBool());
