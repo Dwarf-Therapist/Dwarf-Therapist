@@ -436,7 +436,8 @@ void Dwarf::read_gender_orientation() {
     QSettings *s = DT->user_settings();
     auto gender_info_option = s->value("options/gender_info", Option_ShowOrientation).toInt();
     bool show_orientation = gender_info_option >= Option_ShowOrientation;
-    bool show_commitment = !m_is_animal && gender_info_option >= Option_ShowCommitment;
+    //bool show_commitment = !m_is_animal && gender_info_option >= Option_ShowCommitment;
+    bool show_commitment = false; // hide commitment until it is better understood
 
     BYTE sex = m_df->read_byte(m_mem->dwarf_field(m_address, "sex"));
     TRACE << "GENDER:" << sex;
