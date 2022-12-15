@@ -1,6 +1,6 @@
 /*
 Dwarf Therapist
-Copyright (c) 2009 Trey Stout (chmod)
+Copyright (c) 2022 Clement Vuchener
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,40 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef DEFINES_H
-#define DEFINES_H
+#ifndef DFINSTANCE_WINE_H
+#define DFINSTANCE_WINE_H
+#include "dfinstance.h"
 
-#define DEFAULT_CELL_SIZE 16
-#define DEFAULT_SPACER_WIDTH 4
+class Dwarf;
+class MemoryLayout;
 
-#define ERROR_NO_VALID_LAYOUTS 500
+class DFInstanceWine : public DFInstance {
+    Q_OBJECT
+public:
+    DFInstanceWine(QObject *parent=0);
+    virtual ~DFInstanceWine();
 
-#define GLOBAL_SORT_COL_IDX 1
+    void find_running_copy();
+    bool df_running();
 
-#define REPO_OWNER "Dwarf-Therapist"
-#define REPO_NAME "Dwarf-Therapist"
+    USIZE read_raw(VIRTADDR addr, USIZE bytes, void *buffer);
+    QString read_string(VIRTADDR addr);
 
-#ifdef Q_OS_WIN
-#   define LAYOUT_SUBDIR "windows"
-#elif defined(Q_OS_LINUX)
-#   define LAYOUT_SUBDIR "windows"
-#elif defined(Q_OS_MAC)
-#   define LAYOUT_SUBDIR "osx"
-#endif
+    // Writing
+    USIZE write_raw(VIRTADDR addr, USIZE bytes, const void *buffer);
+    USIZE write_string(VIRTADDR addr, const QString &str);
 
-#endif
+    bool attach();
+    bool detach();
+
+protected:
+    bool set_pid();
+
+private:
+    int wait_for_stopped();
+
+    pid_t m_pid;
+};
+
+#endif // DFINSTANCE_WINE_H
+
