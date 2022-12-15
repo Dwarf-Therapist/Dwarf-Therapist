@@ -61,7 +61,7 @@ THE SOFTWARE.
 #ifdef Q_OS_WIN
 #include "dfinstancewindows.h"
 #elif defined(Q_OS_LINUX)
-#include "dfinstancelinux.h"
+#include "dfinstancewine.h"
 #elif defined(Q_OS_MAC)
 #include "dfinstanceosx.h"
 #endif
@@ -98,7 +98,7 @@ DFInstance * DFInstance::newInstance(){
 #elif defined(Q_OS_MAC)
     return new DFInstanceOSX();
 #elif defined(Q_OS_LINUX)
-    return new DFInstanceLinux();
+    return new DFInstanceWine();
 #endif
 }
 

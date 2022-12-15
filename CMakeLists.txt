@@ -46,7 +46,7 @@ elseif(UNIX)
         set(MACOSX_BUNDLE_SHORT_VERSION_STRING "${DT_VERSION_MAJOR}.${DT_VERSION_MINOR}.${DT_VERSION_PATCH}")
         set(MACOSX_BUNDLE_BUNDLE_VERSION "${DT_VERSION}")
     else() # Linux
-        set(SOURCES ${SOURCES} src/dfinstancelinux.cpp)
+        set(SOURCES ${SOURCES} src/dfinstancelinux.cpp src/dfinstancewine.cpp)
     endif()
 else()
     message(FATAL_ERROR "unsupported target")
