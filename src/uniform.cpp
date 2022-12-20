@@ -163,7 +163,7 @@ float Uniform::get_uniform_rating(ITEM_TYPE itype){
         required = (float)m_equip_counts.value(itype);
     }else{
         foreach(ITEM_TYPE i,m_equip_counts.uniqueKeys()){
-            if(i <= NUM_OF_ITEM_TYPES)
+            if(i < NUM_OF_ITEM_TYPES)
                 required += m_equip_counts.value(i,0);
         }
     }

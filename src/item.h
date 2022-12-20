@@ -88,7 +88,8 @@ public:
         m[SHIELD]=tr("Armors (Shields)");
         m[HELM]=tr("Armors (Head)");
         m[GLOVES]=tr("Armors (Hands)");
-        m[BOX]=tr("Boxes/Bags");
+        m[BOX]=tr("Boxes");
+        m[BAG]=tr("Bags");
         m[BIN]=tr("Bins");
         m[ARMORSTAND]=tr("Armor Stands");
         m[WEAPONRACK]=tr("Weapon Racks");
