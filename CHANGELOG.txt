@@ -1,3 +1,11 @@
+### Version 41.2.5 Patch Notes
+
+***
+ - added Beliefs grid view
+ - removed outdated Social-Alt grid view
+ - removed commitment from sexual orientation info
+ - fixed configuration file permission
+
 ### Version 41.2.4 Patch Notes
 
 ***
