@@ -109,7 +109,6 @@ QStandardItem *NeedColumn::build_cell(Dwarf *d) {
 QStandardItem *NeedColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves) {
     QStandardItem *item = init_aggregate(group_name);
 
-    int need_level = 0;
     int min_focus_level = std::numeric_limits<int>::max();
     int min_focus_degree = -1;
     QString min_adjective;
@@ -117,7 +116,6 @@ QStandardItem *NeedColumn::build_aggregate(const QString &group_name, const QVec
     for (const auto *d: dwarves) {
         auto needs = d->get_needs(m_need_id);
         for (auto it = needs.first; it != needs.second; ++it) {
-            need_level += it->second->need_level();
             if (it->second->focus_level() < min_focus_level) {
                 min_focus_level = it->second->focus_level();
                 min_focus_degree = it->second->focus_degree();
