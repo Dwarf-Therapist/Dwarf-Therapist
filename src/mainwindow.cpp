@@ -147,6 +147,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->act_commit_pending_changes, SIGNAL(triggered()), this, SLOT(commit_changes()));
     connect(ui->act_expand_all, SIGNAL(triggered()), m_view_manager, SLOT(expand_all()));
     connect(ui->act_collapse_all, SIGNAL(triggered()), m_view_manager, SLOT(collapse_all()));
+    connect(ui->act_disable_work_details, SIGNAL(triggered(bool)), this, SLOT(update_disable_work_details(bool)));
 
     connect(ui->tree_pending, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)),
             m_view_manager, SLOT(jump_to_dwarf(QTreeWidgetItem *, QTreeWidgetItem *)));
@@ -379,6 +380,7 @@ void MainWindow::connect_to_df() {
 
                 m_grid_view_widget->draw_views();
             }
+            ui->act_disable_work_details->setChecked(m_df->disabled_work_details());
             if(DT->user_settings()->value("options/read_on_startup", true).toBool()) {
                 read_dwarves();
             }
@@ -489,6 +491,7 @@ void MainWindow::read_dwarves() {
         return;
     }
 
+    ui->act_disable_work_details->setChecked(m_df->disabled_work_details());
     set_interface_enabled(true);
     new_pending_changes(0);
 
@@ -635,6 +638,7 @@ void MainWindow::set_interface_enabled(bool enabled) {
     ui->btn_clear_filters->setEnabled(enabled);
     ui->act_import_existing_professions->setEnabled(enabled);
     ui->act_print->setEnabled(enabled);
+    ui->act_disable_work_details->setEnabled(enabled);
     if(m_view_manager)
         m_view_manager->setEnabled(enabled);
 }
@@ -1715,4 +1719,10 @@ void MainWindow::memory_layout_update(const MemoryLayout &layout)
             connect_to_df();
         }
     }
+}
+
+void MainWindow::update_disable_work_details(bool checked)
+{
+    if (m_df)
+        m_df->set_disabled_work_details(checked);
 }

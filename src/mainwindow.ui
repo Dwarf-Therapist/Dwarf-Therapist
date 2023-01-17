@@ -515,6 +515,7 @@
    <addaction name="separator"/>
    <addaction name="act_clear_pending_changes"/>
    <addaction name="act_commit_pending_changes"/>
+   <addaction name="act_disable_work_details"/>
    <addaction name="separator"/>
    <addaction name="act_options"/>
    <addaction name="act_help"/>
@@ -1295,6 +1296,18 @@
    </property>
    <property name="toolTip">
     <string>Show loaded memory layouts</string>
+   </property>
+  </action>
+  <action name="act_disable_work_details">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources.qrc">
+     <normaloff>:/img/table.png</normaloff>:/img/table.png</iconset>
+   </property>
+   <property name="text">
+    <string>Allow labor changes</string>
    </property>
   </action>
  </widget>

@@ -286,6 +286,7 @@ void DFInstance::load_game_data()
     load_item_defs();
 
     load_fortress_name();
+    load_external_flag();
 }
 
 QString DFInstance::get_language_word(VIRTADDR addr){
@@ -790,6 +791,7 @@ void DFInstance::refresh_data(){
     load_fortress();
     load_squads(true);
     load_items();
+    load_external_flag();
 }
 
 void DFInstance::load_items(){
@@ -1454,4 +1456,20 @@ PID DFInstance::select_pid(QSet<PID> pids) {
         return 0;
 
     return rv;
+}
+
+void DFInstance::load_external_flag()
+{
+    m_external_flag = read_int(m_layout->global_address(this, "external_flag"));
+}
+
+void DFInstance::set_disabled_work_details(bool disabled)
+{
+    attach();
+    load_external_flag();
+    m_external_flag &= ~1;
+    if (disabled)
+        m_external_flag |= 1;
+    write_int(m_layout->global_address(this, "external_flag"), m_external_flag);
+    detach();
 }

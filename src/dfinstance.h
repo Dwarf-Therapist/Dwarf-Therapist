@@ -257,6 +257,9 @@ public:
     const QString fortress_name();
     QList<Squad*> squads() {return m_squads;}
 
+    bool disabled_work_details() const { return m_external_flag & 1; }
+    void set_disabled_work_details(bool disabled);
+
 protected:
     VIRTADDR m_base_addr;
     QString m_df_checksum;
@@ -337,11 +340,14 @@ private:
     VIRTADDR m_squad_vector;
     QList<Squad*> m_squads;
 
+    int32_t m_external_flag;
+
     void load_hist_figures();
     void load_occupations();
     void load_identities();
     void index_item_vector(ITEM_TYPE itype);
     void send_connection_interrupted();
+    void load_external_flag();
 };
 
 // specializations for VIRTADDR using pointer size
