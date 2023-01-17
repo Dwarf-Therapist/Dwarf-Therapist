@@ -235,6 +235,8 @@ private slots:
     void save_ui_selections();
     void restore_ui_selections();
 
+    void update_disable_work_details(bool checked);
+
 signals:
     void lostConnection();
 
