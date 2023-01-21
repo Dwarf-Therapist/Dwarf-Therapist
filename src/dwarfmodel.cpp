@@ -694,7 +694,7 @@ void DwarfModel::cell_activated(const QModelIndex &idx, DwarfModelProxy *proxy) 
     }
 
     COLUMN_TYPE type = static_cast<COLUMN_TYPE>(idx.data(DwarfModel::DR_COL_TYPE).toInt());
-    if (type != CT_LABOR && type != CT_FLAGS && type != CT_ROLE && type != CT_SUPER_LABOR && type != CT_CUSTOM_PROFESSION)
+    if ((!m_df->disabled_work_details() || (type != CT_LABOR && type != CT_ROLE && type != CT_SUPER_LABOR && type != CT_CUSTOM_PROFESSION)) && type != CT_FLAGS)
         return;
 
     Q_ASSERT(item);
