@@ -263,11 +263,12 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
         m->removeAction(m_unassign_squad);
 
         if(!d->is_animal()){
-
+            DFInstance *df = DT ? DT->get_DFInstance() : nullptr;
+            bool can_set_labors = d->can_set_labors() && df && df->disabled_work_details();
             customization_menu->setEnabled(true);
-            m_assign_labors->setEnabled(d->can_set_labors());
-            m_assign_skilled_labors->setEnabled(d->can_set_labors());
-            m_remove_labors->setEnabled(d->can_set_labors());
+            m_assign_labors->setEnabled(can_set_labors);
+            m_assign_skilled_labors->setEnabled(can_set_labors);
+            m_remove_labors->setEnabled(can_set_labors);
 
             refresh_update_c_prof_menu(d);
 
