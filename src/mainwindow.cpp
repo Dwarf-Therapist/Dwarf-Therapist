@@ -72,6 +72,7 @@ THE SOFTWARE.
 #include <QTime>
 #include <QTimer>
 #include <QUrl>
+#include <QCheckBox>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -1723,6 +1724,33 @@ void MainWindow::memory_layout_update(const MemoryLayout &layout)
 
 void MainWindow::update_disable_work_details(bool checked)
 {
+    if (checked && !m_settings->value("work_details/dont_show_disabling", false).toBool()) {
+        QMessageBox mb(QMessageBox::Information,
+                tr("Disabling work details"),
+                tr("Work details will be disabled for the current session. The "
+                    "game will not restore this setting when it is restarted."
+                    "You will have to disable them again when loading a game "
+                    "to ensure  your labor assignments are not overwritten."),
+                QMessageBox::Ok, this);
+        mb.setCheckBox(new QCheckBox(tr("Don't show this message again.")));
+        mb.checkBox()->setChecked(false);
+        mb.exec();
+        m_settings->setValue("work_details/dont_show_disabling", mb.checkBox()->isChecked());
+    }
+    if (!checked && !m_settings->value("work_details/dont_show_enabling", false).toBool()) {
+        QMessageBox mb(QMessageBox::Information,
+                tr("Enabling work details"),
+                tr("The game will now assign labors according to work details. "
+                    "Your labor assignments will be overwritten with the next "
+                    "update (for example when assigning work details)."),
+                QMessageBox::Ok, this);
+        mb.setCheckBox(new QCheckBox(tr("Don't show this message again.")));
+        mb.checkBox()->setChecked(false);
+        mb.exec();
+        m_settings->setValue("work_details/dont_show_enabling", mb.checkBox()->isChecked());
+    }
+
+    // apply change
     if (m_df)
         m_df->set_disabled_work_details(checked);
 }
