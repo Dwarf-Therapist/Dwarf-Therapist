@@ -121,7 +121,12 @@ public:
         OCC_SCHOLAR,
         OCC_MERC,
         OCC_MONSTER,
-        OCC_SCRIBE
+        OCC_SCRIBE,
+        OCC_MESSENGER,
+        OCC_DOCTOR,
+        OCC_DIAGNOSTICIAN,
+        OCC_SURGEON,
+        OCC_BONE_DOCTOR,
     };
 
     static inline QString get_animal_trained_descriptor(const TRAINED_LEVEL &type) {
@@ -173,6 +178,11 @@ public:
         case OCC_MERC: return tr("Mercenary");
         case OCC_MONSTER: return tr("Monster Slayer");
         case OCC_SCRIBE: return tr("Scribe");
+        case OCC_MESSENGER: return tr("Messenger");
+        case OCC_DOCTOR: return tr("Doctor");
+        case OCC_DIAGNOSTICIAN: return tr("Diagnostician");
+        case OCC_SURGEON: return tr("Surgeon");
+        case OCC_BONE_DOCTOR: return tr("Bone Doctor");
         default:
             return tr("Unknown");
         }
