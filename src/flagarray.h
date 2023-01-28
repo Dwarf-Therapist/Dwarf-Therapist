@@ -40,8 +40,6 @@ private:
 public:
     FlagArray();
     FlagArray(DFInstance *df, VIRTADDR base_addr);
-    FlagArray(const FlagArray &f);
-    virtual ~FlagArray();
 
     int count() const;
     bool has_flag(const int f) const;
