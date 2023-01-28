@@ -36,17 +36,6 @@ FlagArray::FlagArray(DFInstance *df, VIRTADDR base_addr)
     }
 }
 
-FlagArray::FlagArray(const FlagArray &f)
-    : m_flags(f.m_flags)
-    , m_flags_custom(f.m_flags_custom)
-    , m_df(f.m_df)
-{
-}
-
-FlagArray::~FlagArray(){
-    m_df = 0;
-}
-
 bool FlagArray::has_flag(const int f) const {
     if(f < m_flags.count()){
         return m_flags.at(f);
