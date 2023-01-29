@@ -2422,6 +2422,13 @@ void Dwarf::clear_pending() {
     refresh_minimal_data();
 }
 
+void Dwarf::clear_pending_labors() {
+    foreach(int labor_id, m_pending_labors.uniqueKeys()) {
+        if (labor_id >= 0 && is_labor_state_dirty(labor_id))
+            set_labor(labor_id, m_labors[labor_id], false);
+    }
+}
+
 void Dwarf::commit_pending(bool single) {
     VIRTADDR addr = m_mem->dwarf_field(m_address, "labors");
 

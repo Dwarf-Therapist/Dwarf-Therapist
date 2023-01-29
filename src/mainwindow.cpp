@@ -1753,4 +1753,6 @@ void MainWindow::update_disable_work_details(bool checked)
     // apply change
     if (m_df)
         m_df->set_disabled_work_details(checked);
+    if (!m_df->disabled_work_details())
+        m_model->clear_pending_labors();
 }

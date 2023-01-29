@@ -835,6 +835,16 @@ void DwarfModel::clear_pending() {
     emit need_redraw();
 }
 
+void DwarfModel::clear_pending_labors() {
+    if (m_df.isNull())
+        return;
+    foreach(Dwarf *d, m_dwarves)
+        d->clear_pending_labors();
+    DT->emit_labor_counts_updated();
+    calculate_pending();
+    emit need_redraw();
+}
+
 void DwarfModel::commit_pending() {
     //before committing, commit squad name changes, and then refresh our squads
     m_df->fortress()->refresh_squads(); //update our fortress squad list first

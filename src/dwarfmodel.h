@@ -151,6 +151,7 @@ public slots:
     void load_dwarves();
     void cell_activated(const QModelIndex &idx, DwarfModelProxy *proxy = 0); // a grid cell was clicked/doubleclicked or enter was pressed on it
     void clear_pending();
+    void clear_pending_labors();
     void commit_pending();
     void section_right_clicked(int idx);
 

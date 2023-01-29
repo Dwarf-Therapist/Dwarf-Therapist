@@ -626,6 +626,8 @@ public:
 
         //! undo any uncomitted changes to this dwarf (reset back to game-state)
         void clear_pending();
+        //! undo labor changes only
+        void clear_pending_labors();
         //! write all uncommitted pending changes back to the game (DANGEROUS METHOD)
         void commit_pending(bool single=false);
 
