@@ -217,6 +217,9 @@ void OptionsMenu::tooltip_skills_toggled(bool checked){
     ui->chk_show_skills_level->setEnabled(checked);
     ui->chk_show_skills_exp_summary->setEnabled(checked);
     ui->chk_show_skills_use_color->setEnabled(checked);
+    ui->chk_tooltip_top_skills->setEnabled(checked);
+    ui->sb_tooltip_top_skills->setEnabled(checked);
+    ui->lbl_tooltip_top_skills->setEnabled(checked);
 }
 
 void OptionsMenu::tooltip_roles_toggled(bool checked){
@@ -378,6 +381,8 @@ void OptionsMenu::read_settings() {
     ui->chk_show_skills_level->setChecked(s->value("tooltip_show_skills_level",true).toBool());
     ui->chk_show_skills_exp_summary->setChecked(s->value("tooltip_show_skills_exp_summary",true).toBool());
     ui->chk_show_skills_use_color->setChecked(s->value("tooltip_show_skills_use_color",true).toBool());
+    ui->chk_tooltip_top_skills->setChecked(s->value("tooltip_only_top_skills",true).toBool());
+    ui->sb_tooltip_top_skills->setValue(s->value("tooltip_top_skill_count",12).toInt());
     tooltip_skills_toggled(ui->chk_show_skills->isChecked());
 
     DefaultRoleWeight::update_all();
@@ -519,6 +524,8 @@ void OptionsMenu::write_settings() {
         s->setValue("tooltip_show_skills_level", ui->chk_show_skills_level->isChecked());
         s->setValue("tooltip_show_skills_exp_summary", ui->chk_show_skills_exp_summary->isChecked());
         s->setValue("tooltip_show_skills_use_color", ui->chk_show_skills_use_color->isChecked());
+        s->setValue("tooltip_only_top_skills", ui->chk_tooltip_top_skills->isChecked());
+        s->setValue("tooltip_top_skill_count", ui->sb_tooltip_top_skills->value());
         s->setValue("tooltip_show_artifact", ui->chk_show_artifact->isChecked());
         s->setValue("tooltip_show_mood", ui->chk_show_highest_mood->isChecked());
         s->setValue("tooltip_show_thoughts", ui->chk_show_thoughts->isChecked());

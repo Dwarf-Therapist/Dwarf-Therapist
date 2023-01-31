@@ -2640,6 +2640,8 @@ QString Dwarf::tooltip_text() {
         bool include_level = s->value("tooltip_show_skills_level",true).toBool();
         bool include_exp_summary = s->value("tooltip_show_skills_exp_summary",true).toBool();
         bool use_color = s->value("tooltip_show_skills_use_color",true).toBool();
+        bool top_skills_only = s->value("tooltip_only_top_skills",true).toBool();
+        int top_skill_count = s->value("tooltip_top_skill_count",12).toInt();
         QMapIterator<float,int> i(m_sorted_skills);
         i.toBack();
         while(i.hasPrevious()){
@@ -2648,6 +2650,8 @@ QString Dwarf::tooltip_text() {
                 continue;
             }
             skill_summary.append(QString("<li>%1</li>").arg(m_skills.value(i.value()).to_string(include_level, include_exp_summary, use_color)));
+            if (top_skills_only && --top_skill_count == 0)
+                break;
         }
     }
 
