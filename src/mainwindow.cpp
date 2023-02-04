@@ -1474,10 +1474,10 @@ void MainWindow::write_labor_optimizations(){
 }
 
 void MainWindow::toggle_opts_menu(){
-    if(m_view_manager && m_view_manager->get_selected_dwarfs().count() <= 0)
-        m_btn_optimize->setEnabled(false);
-    else
+    if(m_view_manager && m_view_manager->get_selected_dwarfs().count() > 0 && m_df && m_df->disabled_work_details())
         m_btn_optimize->setEnabled(true);
+    else
+        m_btn_optimize->setEnabled(false);
 }
 
 void MainWindow::refresh_opts_menus() {
@@ -1556,6 +1556,8 @@ void MainWindow::refresh_opts_menus() {
 
 void MainWindow::init_optimize(){
     if(!m_df)
+        return;
+    if (!m_df->disabled_work_details())
         return;
 
     m_act_btn_optimize->setEnabled(false);

@@ -553,6 +553,10 @@ void optimizereditor::save(laborOptimizerPlan *p){
 }
 
 void optimizereditor::test_optimize(){
+    if (auto df = DT->get_DFInstance())
+        if (!df->disabled_work_details())
+            return;
+
     clear_log();
 
     save(m_plan);
