@@ -1,3 +1,13 @@
+### Version 42.0.0 Patch Notes
+
+***
+ - updated game data for DF 50.xx
+ - added memory layouts for DF 50.04, 50.05 (steam-only), 50.07 (steam, classic, itch)
+ - removed memory layouts for DF 0.47.05 and earlier
+ - added "allow labor changes" button for replacing in-game work details with manual labor management
+ - added Wine support for the Linux version
+ - added "show only top skills in tool-tip" option (default to 12)
+
 ### Version 41.2.5 Patch Notes
 
 ***
