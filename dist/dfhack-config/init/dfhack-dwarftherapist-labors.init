@@ -1,0 +1,1 @@
+:lua df.global.game_extra.external_flag = 1
