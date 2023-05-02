@@ -1583,10 +1583,10 @@ void Dwarf::read_uniform(){
             if(labor_enabled(0)){//mining
                 m_uniform->add_uniform_item(WEAPON,-1,0); //mining skill
             }else if(labor_enabled(10)){//woodcutting
-                m_uniform->add_uniform_item(WEAPON,-1,38); //axe skill
+                m_uniform->add_uniform_item(WEAPON,-1,37); //axe skill
             }else if(labor_enabled(44)){//hunter
                 //add a weapon of crossbow/bow/blowgun skills
-                QList<int> skills = QList<int>() << 44 << 52 << 53;
+                QList<int> skills = QList<int>() << 43 << 51 << 52;
                 m_uniform->add_uniform_item(WEAPON,-1,skills);
                 //add quiver
                 m_uniform->add_uniform_item(QUIVER,-1,-1);
