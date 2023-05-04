@@ -11,7 +11,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-18.04
+          - os: ubuntu-20.04
             qt_version: 5.15.2
             qt_host: linux
             cxxflags: '-Wall -Wextra -Werror=all'
@@ -44,9 +44,9 @@ jobs:
       CXXFLAGS: ${{matrix.cxxflags}}
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Install Qt
-        uses: jurplel/install-qt-action@v2
+        uses: jurplel/install-qt-action@v3
         with:
           version: ${{matrix.qt_version}}
           host: ${{matrix.qt_host}}
