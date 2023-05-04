@@ -1,3 +1,11 @@
+### Version 42.0.1 Patch Notes
+
+***
+ - added memory layouts for DF 50.08
+ - added some missing thought captions
+ - fixed missing weapon equipment for hunters/woodcutters
+ - fixed "Armor (Legs)" column in Military/Military-Alt. grid views
+
 ### Version 42.0.0 Patch Notes
 
 ***
