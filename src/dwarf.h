@@ -94,8 +94,7 @@ public:
 
     enum MISC_STATES {
         STATE_MIGRANT = 7,
-        STATE_ON_BREAK = 17,
-        STATE_CAVE_ADAPT = 19
+        STATE_CAVE_ADAPT = 16
     };
 
     enum TRAINED_LEVEL {
