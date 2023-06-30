@@ -1196,11 +1196,7 @@ void Dwarf::read_current_job(){
 
     }else{
         //default to no job/break
-        if(has_state(STATE_ON_BREAK)){
-            m_current_job_id = DwarfJob::JOB_ON_BREAK;
-        }else{
-            m_current_job_id = DwarfJob::JOB_IDLE;
-        }
+        m_current_job_id = DwarfJob::JOB_IDLE;
 
         BYTE meeting = 0;
         int offset = m_mem->dwarf_offset("meeting");
