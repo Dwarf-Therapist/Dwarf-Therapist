@@ -1,3 +1,9 @@
+### Version 42.0.2 Patch Notes
+
+***
+ - add memory layouts for DF 50.09
+ - fixed cave adaptation misc trait
+
 ### Version 42.0.1 Patch Notes
 
 ***
