@@ -17,6 +17,21 @@ for plugin in fusiondark DarkStyle; do
     cd -
 done
 
+# Install dependencies for deployment
+sudo apt update
+sudo apt install -y \
+    libfontconfig1 \
+    libxcb-icccm4 \
+    libxcb-image0 \
+    libxcb-keysyms1 \
+    libxcb-render-util0 \
+    libxcb-shape0 \
+    libxcb-xinerama0 \
+    libxcb-xkb1 \
+    libxkbcommon-x11-0 \
+    libdbus-1-3 \
+    libegl1
+
 # Download and extract linuxdeployqt
 wget "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
 chmod +x linuxdeployqt*.AppImage
