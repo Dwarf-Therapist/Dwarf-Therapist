@@ -152,7 +152,7 @@ bool DFInstanceLinux::set_pid(){
         QFile file(QString("%1/comm").arg(fn));
         if (file.open(QIODevice::ReadOnly)) {
             QByteArray comm = file.readAll();
-            if (comm == "dwarfort.exe\n" || comm == "Dwarf_Fortress\n") {
+            if (comm == "dwarfort\n") {
                 pids << iter.fileName().toLong();
             }
         }
@@ -164,129 +164,6 @@ bool DFInstanceLinux::set_pid(){
         return false;
 
     return true;
-}
-
-struct Elf32
-{
-    using Ehdr = Elf32_Ehdr;
-    using Shdr = Elf32_Shdr;
-    using Sym = Elf32_Sym;
-    using Rel = Elf32_Rel;
-    using Rela = Elf32_Rela;
-
-    static auto RSym(uint32_t info) { return ELF32_R_SYM(info); }
-    static auto RType(uint32_t info) { return ELF32_R_TYPE(info); }
-
-    static constexpr auto JumpSlot = R_386_JMP_SLOT;
-
-    using Addr = Elf32_Addr;
-    using Off = Elf32_Off;
-
-};
-
-struct Elf64
-{
-    using Ehdr = Elf64_Ehdr;
-    using Shdr = Elf64_Shdr;
-    using Sym = Elf64_Sym;
-    using Rel = Elf64_Rel;
-    using Rela = Elf64_Rela;
-
-    static auto RSym(uint64_t info) { return ELF64_R_SYM(info); }
-    static auto RType(uint64_t info) { return ELF64_R_TYPE(info); }
-
-    static constexpr auto JumpSlot = R_X86_64_JUMP_SLOT;
-
-    using Addr = Elf64_Addr;
-    using Off = Elf64_Off;
-};
-
-template<typename Elf, typename Rel>
-static uintptr_t search_jump_slot(std::ifstream &exe, const typename Elf::Shdr &reloc, unsigned int symbol_index)
-{
-    std::vector<Rel> reltab (reloc.sh_size / sizeof(Rel));
-    exe.seekg(reloc.sh_offset);
-    exe.read(reinterpret_cast<char *>(reltab.data()), reloc.sh_size);
-    for (const auto &rel: reltab) {
-        if (Elf::RSym(rel.r_info) == symbol_index) {
-            if (Elf::RType(rel.r_info) == Elf::JumpSlot)
-                return rel.r_offset;
-            else {
-                LOGE << "Unexpected relocation type:" << Elf::RType(rel.r_info)
-                     << "for symbol" << symbol_index;
-            }
-        }
-    }
-    return 0;
-}
-
-template<typename Off>
-static std::string read_string(std::ifstream &file, Off offset)
-{
-    std::string str;
-    file.seekg(offset);
-    while (auto c = file.get())
-        str.push_back(c);
-    return str;
-}
-
-template<typename Elf>
-static typename Elf::Shdr read_section_header(std::ifstream &exe, const typename Elf::Ehdr &ehdr, uint16_t index)
-{
-    typename Elf::Shdr shdr;
-    exe.seekg(ehdr.e_shoff + index * ehdr.e_shentsize);
-    exe.read(reinterpret_cast<char *>(&shdr), sizeof(typename Elf::Shdr));
-    return shdr;
-}
-
-template<typename Elf>
-static uintptr_t find_relocation(std::ifstream &exe, const std::string &symbol)
-{
-    // Read headers
-    typename Elf::Ehdr ehdr;
-    exe.seekg(0);
-    exe.read(reinterpret_cast<char *>(&ehdr), sizeof(ehdr));
-    auto shstrtab_offset = read_section_header<Elf>(exe, ehdr, ehdr.e_shstrndx).sh_offset;
-    std::map<std::string, typename Elf::Shdr> sections;
-    for (uint16_t i = 0; i < ehdr.e_shnum; ++i) {
-        auto shdr = read_section_header<Elf>(exe, ehdr, i);
-        sections.emplace(read_string(exe, shstrtab_offset + shdr.sh_name), shdr);
-    }
-    // Search dynamic symbol
-    auto dynstr_it = sections.find(".dynstr");
-    auto dynsym_it = sections.find(".dynsym");
-    int symbol_index = -1;
-    if (dynstr_it != sections.end() && dynsym_it != sections.end()) {
-        const auto &dynstr = dynstr_it->second;
-        const auto &dynsym = dynsym_it->second;
-        std::vector<typename Elf::Sym> symtab (dynsym.sh_size / sizeof(typename Elf::Sym));
-        exe.seekg(dynsym.sh_offset);
-        exe.read(reinterpret_cast<char *>(symtab.data()), dynsym.sh_size);
-        for (auto i = 0u; i < symtab.size(); ++i) {
-            const auto &sym = symtab[i];
-            if (read_string(exe, dynstr.sh_offset + sym.st_name) == symbol) {
-                symbol_index = i;
-                break;
-            }
-        }
-    }
-    if (symbol_index < 0) {
-        LOGE << "Symbol" << QString::fromStdString(symbol) << "not found";
-        return 0;
-    }
-    // Search relocation sections
-    uintptr_t addr = 0;
-    for (const auto &p: sections) {
-        const auto &section = p.second;
-        if (section.sh_type == SHT_RELA)
-            addr = search_jump_slot<Elf, typename Elf::Rela>(exe, section, symbol_index);
-        else if (section.sh_type == SHT_REL)
-            addr = search_jump_slot<Elf, typename Elf::Rel>(exe, section, symbol_index);
-        if (addr)
-            return addr;
-    }
-    LOGE << "Could not find relocation section containing symbol" << symbol_index;
-    return 0;
 }
 
 static constexpr char ElfMagic[4] = { ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3 };
@@ -302,8 +179,6 @@ static int get_elf_class(std::ifstream &exe)
 
     return exe.get();
 }
-
-static constexpr int TrapOpCode = 0xcc;
 
 void DFInstanceLinux::find_running_copy() {
     m_status = DFS_DISCONNECTED;
@@ -324,27 +199,16 @@ void DFInstanceLinux::find_running_copy() {
     QString md5 = "UNKNOWN";
     if (auto exe = std::ifstream(proc_path + "/exe")) {
         // check class from ELF header to find the pointer size and string::assign relocation
-        VIRTADDR string_assign_relocation = 0;
         switch (get_elf_class(exe)) {
             case ELFCLASS32:
                 m_pointer_size = 4;
-                string_assign_relocation = find_relocation<Elf32>(exe, "_ZNSs6assignEPKcj");
                 break;
             case ELFCLASS64:
                 m_pointer_size = 8;
-                string_assign_relocation = find_relocation<Elf64>(exe, "_ZNSs6assignEPKcm");
                 break;
             default:
                 LOGE << "invalid ELF header";
                 m_pointer_size = sizeof(VIRTADDR);
-        }
-        if (!string_assign_relocation) {
-            LOGE << "Failed to find std::string::assign relocation";
-            m_string_assign_addr = 0;
-        }
-        else {
-            m_string_assign_addr = read_addr(string_assign_relocation);
-            LOGD << "found std::string::assign at" << hexify(m_string_assign_addr);
         }
 
         // ELF binaries don't seem to store a linker timestamp, so just MD5 the file.
@@ -367,43 +231,6 @@ void DFInstanceLinux::find_running_copy() {
         return;
     }
 
-    // look for symbols and instructions
-    std::regex procmaps_re("([0-9a-f]+)-([0-9a-f]+) ([-r][-w][-x][-p]) ([0-9a-f]+) ([0-9a-f]{2}):([0-9a-f]{2}) ([0-9]+)(?:\\s*(.+))");
-    m_trap_addr = 0;
-    if (auto maps = std::ifstream(proc_path + "/maps")) {
-        std::string line;
-        while (std::getline(maps, line)) {
-            std::smatch res;
-            if (!std::regex_search(line, res, procmaps_re))
-                continue;
-            VIRTADDR start = std::stoull(res[1], nullptr, 16);
-            VIRTADDR end = std::stoull(res[2], nullptr, 16);
-
-            // Scan executable sections for a trap instruction
-            auto perm = res[3].str();
-            if (m_trap_addr == 0 && perm.at(2) == 'x') {
-                char buffer[PAGE_SIZE];
-                for (VIRTADDR offset = start; offset < end; offset += PAGE_SIZE) {
-                    if (read_raw(offset, PAGE_SIZE, buffer) != PAGE_SIZE) {
-                        LOGE << "Failed to read executable section";
-                        break;
-                    }
-                    char *res = reinterpret_cast<char *>(memchr(buffer, TrapOpCode, PAGE_SIZE));
-                    if (res) {
-                        m_trap_addr = offset+(res-buffer);
-                        LOGD << "found trap instruction at" << hexify(m_trap_addr);
-                        break;
-                    }
-                }
-            }
-            if (m_trap_addr != 0)
-                break; // we found everything we needed
-        }
-    }
-    else {
-        LOGE << "Failed to open memory maps";
-    }
-
     m_status = DFS_CONNECTED;
     set_memory_layout(md5);
 }
@@ -413,169 +240,36 @@ bool DFInstanceLinux::df_running(){
     return (set_pid() && cur_pid == m_pid);
 }
 
-static std::pair<VIRTADDR, std::size_t> check_string (DFInstance *df, VIRTADDR addr) {
-    constexpr auto error_pair = std::make_pair<VIRTADDR, std::size_t> (0, 0);
-    auto data_addr = df->read_addr(addr);
-    if (!data_addr)
-        return error_pair;
-    auto pointer_size = df->pointer_size();
-    std::vector<char> rep(3 * pointer_size);
-    if (!df->read_raw(data_addr-rep.size(), rep.size(), rep.data()))
-        return error_pair;
-    std::size_t length = 0, capacity = 0;
-    std::copy_n(&rep[0], pointer_size, reinterpret_cast<char *>(&length));
-    std::copy_n(&rep[pointer_size], pointer_size, reinterpret_cast<char *>(&capacity));
-    return length <= capacity ? std::make_pair(data_addr, length) : error_pair;
-}
+static constexpr std::size_t STRING_BUFFER_LENGTH = 16;
 
 QString DFInstanceLinux::read_string(VIRTADDR addr) {
-    auto data = check_string(this, addr);
-    if (data.first) {
-        std::vector<char> buffer(data.second);
-        read_raw(data.first, buffer.size(), buffer.data());
-
-        return QTextCodec::codecForName("IBM437")->toUnicode(buffer.data(), buffer.size());
+    VIRTADDR buffer_addr = read_addr(addr);
+    std::size_t len = read_int(addr + m_pointer_size);
+    std::size_t cap = buffer_addr == addr + 2*m_pointer_size
+        ? STRING_BUFFER_LENGTH-1
+        : read_int(addr +  2*m_pointer_size);
+    if (len > cap) {
+        LOGW << "string at" << addr << "is length" << len << "which is larger than cap" << cap;
+        return {};
     }
-    else {
-        LOGE << "Invalid string at" << hexify(addr);
-        return QString ();
+    if (cap > 1000000) {
+        LOGW << "string at" << addr << "is cap" << cap << "which is suspiciously large, ignoring";
+        return {};
     }
+    std::vector<char> buffer(len);
+    read_raw(buffer_addr, buffer.size(), buffer.data());
+    return QTextCodec::codecForName("IBM437")->toUnicode(buffer.data(), buffer.size());
 }
 
 USIZE DFInstanceLinux::write_string(const VIRTADDR addr, const QString &str) {
-#ifdef __x86_64__
-    static constexpr auto sp = &user_regs_struct::rsp;
-    static constexpr auto ip = &user_regs_struct::rip;
-    static constexpr auto orig_ax = &user_regs_struct::orig_rax;
-    static constexpr auto ip_offset = offsetof(user, regs.rip);
-#else
-    static constexpr auto sp = &user_regs_struct::esp;
-    static constexpr auto ip = &user_regs_struct::eip;
-    static constexpr auto orig_ax = &user_regs_struct::orig_eax;
-    static constexpr auto ip_offset = offsetof(user, regs.eip);
-#endif
-
-    if (m_trap_addr == 0 || m_string_assign_addr == 0) {
-        LOGE << "Cannot write string without trap and std::string::assign addresses.";
-        return 0;
-    }
-
-    if (!check_string(this, addr).first) {
-        LOGE << "Invalid string at" << hexify(addr);
-        return 0;
-    }
-
-    attach();
-
-    QByteArray str_data = QTextCodec::codecForName("IBM437")->fromUnicode(str);
-
-    /* Save the current value of the main thread registers */
-    struct user_regs_struct saved_regs;
-    if (ptrace(PTRACE_GETREGS, m_pid, 0, &saved_regs) == -1) {
-        LOGE << "Could not retrieve original register information:" << strerror(errno);
-        detach();
-        return 0;
-    }
-
-    struct user_regs_struct work_regs = saved_regs;
-    work_regs.*orig_ax = -1; // prevents syscall restart
-    work_regs.*sp = saved_regs.*sp;
-
-#ifdef __x86_64__
-    if (m_pointer_size == 8) {
-        // x86_64 ABI reserve a 128 byte "red zone" for storing local variable without changing rsp
-        work_regs.rsp -= 128;
-    }
-#endif
-
-    // allocate space for string and write data in remote stack
-    work_regs.*sp -= str_data.size();
-    VIRTADDR str_data_addr = work_regs.*sp;
-    if (write_raw(str_data_addr, str_data.size(), str_data.data()) != (unsigned int)str_data.size()) {
-        LOGE << "Failed to write string in stack";
-        detach();
-        return 0;
-    }
-
-    // prepare stack buffer with return address and arguments
-    std::vector<char> stack;
-    auto add_on_stack = [&stack, pointer_size=m_pointer_size] (VIRTADDR value) {
-        std::copy_n(reinterpret_cast<char *>(&value), pointer_size, std::back_inserter(stack));
-    };
-    add_on_stack(m_trap_addr); // return address
-    if (m_pointer_size == 4) {
-        add_on_stack(addr); // this
-        add_on_stack(str_data_addr); // s
-        add_on_stack(str_data.size()); // count
-    }
-#ifdef __x86_64__
-    else if (m_pointer_size == 8) {
-        work_regs.rdi = addr; // this
-        work_regs.rsi = str_data_addr; // s
-        work_regs.rdx = str_data.size(); // count
-    }
-#endif
-    else {
-        LOGE << "architecture not supported";
-        detach();
-        return 0;
-    }
-
-    work_regs.*sp -= stack.size()-m_pointer_size; // reserve space for args
-    work_regs.*sp &= -16; // align on 16 bytes
-    work_regs.*sp -= m_pointer_size; // space for return address
-
-    // copy buffer in remote stack
-    if (write_raw(work_regs.*sp, stack.size(), stack.data()) != stack.size()) {
-        LOGE << "Failed to write arguments in stack";
-        detach();
-        return 0;
-    }
-
-    // call std::string::assign
-    work_regs.*ip = m_string_assign_addr;
-
-    /* Upload the registers. Note that after this point,
-       if this process crashes before the context is
-       restored, the game will immediately crash too. */
-    if (ptrace(PTRACE_SETREGS, m_pid, 0, &work_regs) == -1) {
-        LOGE << "Could not set register information:" << strerror(errno);
-        detach();
-        return 0;
-    }
-
-    // Execute until the trap is reached
-    VIRTADDR pc;
-    do {
-        if (ptrace(PTRACE_CONT, m_pid, 0, 0) == -1) {
-            LOGE << "ptrace continue failed" << strerror(errno);
-            break;
-        }
-        int status = wait_for_stopped();
-        if (WSTOPSIG(status) != SIGTRAP) {
-            LOGD << "std::string::assign interrupted by signal" << WSTOPSIG(status);
-        }
-        if (WSTOPSIG(status) == SIGSEGV) {
-            LOGE << "Fatal error during remote function call.";
-            LOGE << "Trying to restore DF state, but memory may be corrupted.";
-            break;
-        }
-        // TODO: Handle more signals
-        // TODO: Handle program termination
-        // TODO: Catch exceptions
-        auto ret = ptrace(PTRACE_PEEKUSER, m_pid, ip_offset, 0);
-        if (ret == -1) {
-            LOGE << "ptrace getregs failed" << strerror(errno);
-        }
-        pc = ret;
-    } while (pc != m_trap_addr+1);
-
-    /* Restore the registers. */
-    if (ptrace(PTRACE_SETREGS, m_pid, 0, &saved_regs) == -1) {
-        LOGE << "Could not restore register information:" << strerror(errno);
-    }
-
-    detach();
-    return str.size();
+    VIRTADDR buffer_addr = read_addr(addr);
+    std::size_t cap = buffer_addr == addr + 2*m_pointer_size
+        ? STRING_BUFFER_LENGTH-1
+        : read_int(addr + 2*m_pointer_size);
+    auto data = QTextCodec::codecForName("IBM437")->fromUnicode(str);
+    std::size_t capped_len = std::min(size_t(data.length()), cap);
+    data.resize(capped_len);
+    data.append('\0');
+    write_int(addr + m_pointer_size, capped_len);
+    return write_raw(buffer_addr, capped_len+1, data.data());
 }
-
