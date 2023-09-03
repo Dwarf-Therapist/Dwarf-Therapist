@@ -36,7 +36,7 @@ THE SOFTWARE.
 #ifdef Q_OS_WIN
 #   define LAYOUT_SUBDIR "windows"
 #elif defined(Q_OS_LINUX)
-#   define LAYOUT_SUBDIR "windows"
+#   define LAYOUT_SUBDIR "linux"
 #elif defined(Q_OS_MAC)
 #   define LAYOUT_SUBDIR "osx"
 #endif
