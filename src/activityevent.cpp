@@ -46,7 +46,7 @@ void ActivityEvent::read_data(){
         if(raw_type < 0){
             raw_type = 0;
         }
-        m_id = m_df->read_int(m_address+0x4);
+        m_id = m_df->read_int(m_address+m_df->pointer_size());
         m_type = static_cast<ACT_EVT_TYPE>(raw_type);
 
         QList<ACT_EVT_TYPE> ignore;
