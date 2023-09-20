@@ -39,6 +39,8 @@ public:
     USIZE write_raw(const VIRTADDR addr, const USIZE bytes, const void *buffer);
     USIZE write_string(const VIRTADDR addr, const QString &str);
 
+    int VM_TYPE_OFFSET() {return 0x5;}
+
     bool df_running();
 
     bool attach();
