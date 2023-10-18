@@ -2490,7 +2490,7 @@ void Dwarf::commit_pending(bool single) {
 
     //set flag to get equipment and recheck our uniform and inventory for missing items
     if(needs_equip_recheck){
-        recheck_equipment();
+        recheck_equipment(m_pending_squad_id);
         read_uniform();
         read_inventory();
     }
@@ -2506,8 +2506,19 @@ void Dwarf::commit_pending(bool single) {
     }
 }
 
-void Dwarf::recheck_equipment(){
-    // set the "recheck_equipment" flag if there was a labor change, or squad change
+void Dwarf::recheck_equipment(int squad_id){
+    // set the equipment update flags for squad change
+    if (squad_id != -1) {
+        if (auto squad = m_df->get_squad(squad_id)) {
+            auto flags = m_df->read_int(m_mem->squad_field(squad->address(), "equipment_update"));
+            flags |= 0x7ff;
+            m_df->write_int(m_mem->squad_field(squad->address(), "equipment_update"), flags);
+        }
+    }
+    auto flags = m_df->read_int(m_mem->global_address(m_df, "global_equipment_update"));
+    flags |= 0x7ff;
+    m_df->write_int(m_mem->global_address(m_df, "global_equipment_update"), flags);
+    // set the "recheck_equipment" flag if there was a labor change
     BYTE recheck_equipment = m_df->read_byte(m_mem->dwarf_field(m_address, "recheck_equipment"));
     recheck_equipment |= 1;
     m_df->write_raw(m_mem->dwarf_field(m_address, "recheck_equipment"), 1, &recheck_equipment);
