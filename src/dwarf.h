@@ -553,8 +553,6 @@ public:
 
     Reaction *get_reaction();
 
-    void recheck_equipment();
-
     void find_fake_ident();
 
     bool had_mood() {return m_had_mood;}
@@ -810,6 +808,8 @@ private:
     // assembles component names into a nicely formatted single string
     void build_names();
     quint32 build_flag_mask(int bit);
+
+    void recheck_equipment(int squad_id);
 
 signals:
     void name_changed();
