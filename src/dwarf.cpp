@@ -1109,7 +1109,7 @@ void Dwarf::check_availability(){
     if(m_locked_mood){
         m_can_set_labors = false;
         m_labor_reason = tr("due to mood (%1)").arg(GameDataReader::ptr()->get_mood_name(m_mood_id,true));
-    }else if(!m_is_citizen){
+    }else if(!m_is_citizen && !DT->labor_cheats_allowed()){
         m_can_set_labors = false;
         m_labor_reason = tr("for non-citizens.");
     }else{
