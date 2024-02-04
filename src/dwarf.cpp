@@ -251,7 +251,7 @@ void Dwarf::read_data() {
         }
         //filter out any non-mercenary visitors if necessary
         if (m_df->fortress()->address())
-            m_is_citizen = m_histfig_id == -1 || m_df->fortress()->hist_figures().contains(m_histfig_id);
+            m_is_citizen = m_df->fortress()->hist_figures().contains(m_histfig_id);
         TRACE << "HIST_FIG_ID:" << m_histfig_id;
         if(DT->hide_non_citizens() && !m_is_citizen && m_occ_type != OCC_MERC){
             set_validation("IGNORING visitor/guest",&validated,false,LL_DEBUG);
