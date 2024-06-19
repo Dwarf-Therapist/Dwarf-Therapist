@@ -201,29 +201,25 @@ private:
         if(m_address){
             m_id = m_df->read_int(m_address);
 
-            VIRTADDR uniform_addr = m_df->memory_layout()->squad_field(m_address, "uniform_item_filter"); //filter offset start
-            m_iType = static_cast<ITEM_TYPE>(m_df->read_short(uniform_addr));
-            m_subType = m_df->read_short(m_df->memory_layout()->item_filter_field(uniform_addr, "item_subtype"));
-            m_matType = m_df->read_short(m_df->memory_layout()->item_filter_field(uniform_addr, "mat_type"));
-            m_mat_index = m_df->read_int(m_df->memory_layout()->item_filter_field(uniform_addr, "mat_index"));
-            read_mat_class(uniform_addr);
+            m_iType = static_cast<ITEM_TYPE>(m_df->read_short(m_df->memory_layout()->squad_field(m_address, "uniform_spec_item_type")));
+            m_subType = m_df->read_short(m_df->memory_layout()->squad_field(m_address, "uniform_spec_item_subtype"));
+            m_matType = m_df->read_short(m_df->memory_layout()->squad_field(m_address, "uniform_spec_mat_type"));
+            m_mat_index = m_df->read_int(m_df->memory_layout()->squad_field(m_address, "uniform_spec_mat_index"));
+            /*
+             * mat_class here is actually referencing different vectors of materials in the historical_entity.resources
+             * for now, we cheat this by mapping the material types to matching material flags and compare with those
+             * but a more comprehensive solution would be to add all the required resources.x vector offsets, and search within them for a material match
+             */
+            MATERIAL_CLASS mat_class = static_cast<MATERIAL_CLASS>(m_df->read_short(m_df->memory_layout()->squad_field(m_address, "uniform_spec_mat_class")));
+            if(class_mats().contains(mat_class)){
+                m_mat_flag = class_mats().value(mat_class);
+            }
+            if(mat_class != MC_NONE && mat_class != MC_UNKNOWN){
+                m_mat_generic_name = ItemDefUniform::get_mat_class_desc(mat_class);
+            }
             //individual choice is stored in a bit array, first bit (any) second (melee) third (ranged)
             //currently we only care if one is set or not. it may be ok just to check for a weapon type as well
             m_indv_choice = m_df->read_addr(m_df->memory_layout()->squad_field(m_address, "uniform_indiv_choice")) & 0x7;
-        }
-    }
-    void read_mat_class(VIRTADDR uniform_addr){
-        /*
-         * mat_class here is actually referencing different vectors of materials in the historical_entity.resources
-         * for now, we cheat this by mapping the material types to matching material flags and compare with those
-         * but a more comprehensive solution would be to add all the required resources.x vector offsets, and search within them for a material match
-        */
-        MATERIAL_CLASS mat_class = static_cast<MATERIAL_CLASS>(m_df->read_short(m_df->memory_layout()->item_filter_field(uniform_addr, "mat_class")));
-        if(class_mats().contains(mat_class)){
-            m_mat_flag = class_mats().value(mat_class);
-        }
-        if(mat_class != MC_NONE && mat_class != MC_UNKNOWN){
-            m_mat_generic_name = ItemDefUniform::get_mat_class_desc(mat_class);
         }
     }
     static const QHash<MATERIAL_CLASS,MATERIAL_FLAGS> &class_mats(){
