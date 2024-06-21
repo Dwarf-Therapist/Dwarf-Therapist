@@ -32,7 +32,6 @@ public:
         MEM_HEALTH,
         MEM_WOUND,
         MEM_ITEM,
-        MEM_ITEM_FILTER,
         MEM_ARMOR_SUB,
         MEM_GEN_REF,
         MEM_SYN,
@@ -73,7 +72,6 @@ public:
         case MEM_HEALTH: return "health_offsets";
         case MEM_WOUND: return "unit_wound_offsets";
         case MEM_ITEM: return "item_offsets";
-        case MEM_ITEM_FILTER: return "item_filter_offsets";
         case MEM_ARMOR_SUB: return "armor_subtype_offsets";
         case MEM_GEN_REF: return "general_ref_offsets";
         case MEM_SYN: return "syndrome_offsets";
@@ -139,7 +137,6 @@ public:
     qint16 health_offset(const QString & key) const {return offset(MEM_HEALTH,key);}
     qint16 wound_offset(const QString & key) const {return offset(MEM_WOUND,key);}
     qint16 item_offset(const QString & key) const {return offset(MEM_ITEM,key);}
-    qint16 item_filter_offset(const QString & key) const {return offset(MEM_ITEM_FILTER,key);}
     qint16 armor_subtype_offset(const QString & key) const {return offset(MEM_ARMOR_SUB,key);}
     qint16 general_ref_offset(const QString & key) const {return offset(MEM_GEN_REF,key);}
     qint16 syndrome_offset(const QString & key) const {return offset(MEM_SYN,key);}
@@ -206,9 +203,6 @@ public:
     }
     VIRTADDR item_field(VIRTADDR object, const QString &key) const {
         return field_address(object, MEM_ITEM, key);
-    }
-    VIRTADDR item_filter_field(VIRTADDR object, const QString &key) const {
-        return field_address(object, MEM_ITEM_FILTER, key);
     }
     VIRTADDR armor_subtype_field(VIRTADDR object, const QString &key) const {
         return field_address(object, MEM_ARMOR_SUB, key);
