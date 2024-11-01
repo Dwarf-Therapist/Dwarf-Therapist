@@ -1,3 +1,10 @@
+### Version 42.1.7 Patch Notes
+
+***
+ - added memory layouts for 50.14
+ - updated memory layout format for compatibility with DFHack generator script
+ - fixed some default roles mismatched skills
+
 ### Version 42.1.6 Patch Notes
 
 ***
