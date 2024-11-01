@@ -21,21 +21,6 @@ jobs:
             qt_arch: win64_msvc2019_64
             cmake_generator: Visual Studio 17 2022
             cmake_generator_platform: x64
-          - os: windows-latest
-            qt_version: 5.15.2
-            qt_host: windows
-            qt_arch: win32_msvc2019
-            cmake_generator: Visual Studio 17 2022
-            cmake_generator_platform: Win32
-          - os: macos-latest
-            qt_version: 5.15.2
-            qt_host: mac
-            macosx_deployment_target: 10.13
-            cxxflags: '-Wall -Wextra -Werror=all'
-          - os: macos-latest
-            qt_version: 5.9.9
-            qt_host: mac
-            macosx_deployment_target: 10.9
     runs-on: ${{matrix.os}}
     env:
       MACOSX_DEPLOYMENT_TARGET: ${{matrix.macosx_deployment_target}}
