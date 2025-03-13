@@ -1,3 +1,8 @@
+### Version 42.1.10 Patch Notes
+
+***
+ - added memory layouts for 51.05/51.06/51.07
+
 ### Version 42.1.9 Patch Notes
 
 ***
