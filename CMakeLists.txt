@@ -8,7 +8,7 @@ if(CMAKE_COMPILER_IS_GNUCC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 endif()
 
-set(DT_VERSION "42.1.15")
+set(DT_VERSION "42.1.16")
 if(${DT_VERSION} MATCHES "^([0-9]+)\\.([0-9]+)\\.([0-9]+)(-(.*))?$")
     set(DT_VERSION_MAJOR ${CMAKE_MATCH_1})
     set(DT_VERSION_MINOR ${CMAKE_MATCH_2})
