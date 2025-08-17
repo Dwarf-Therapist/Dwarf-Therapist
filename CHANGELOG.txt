@@ -1,3 +1,9 @@
+### Version 42.1.18 Patch Notes
+
+***
+ - added memory layouts for 52.03
+ - fixed some typos in game_data.ini
+
 ### Version 42.1.17 Patch Notes
 
 ***
