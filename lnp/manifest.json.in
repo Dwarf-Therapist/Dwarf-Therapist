@@ -2,7 +2,7 @@
     "author": "Multiple authors",
     "content_version": "@DT_VERSION@",
     "df_min_version": "0.50.04",
-    "df_max_version": "0.52.05",
+    "df_max_version": "0.53.01",
     "title": "Dwarf Therapist",
     "tooltip": "Makes managing your dwarves' jobs and psychology easy! (NB - DFHack \"labormanager\" must be disabled).",
     "win_exe": "DwarfTherapist.exe",
