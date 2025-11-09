@@ -28,6 +28,16 @@ Dwarf-Therapist requires a C++ compiler (with C++14 support), cmake (3.1.0 or ne
 
 Detailed building instructions can be found in `BUILDING.md`_.
 
+Compatibility for latest DF version:
+====================================
+
+If the latest release is not yet available in the download page, its possible that the necessary data (memory maps) are already updated in the repository.
+
+To update manually you can either:
+
+- build from source code yourself, as per the section above;
+- or grab the memory maps corresponding to your installed DF version from the [/share/data](https://github.com/lioobayoyo/Dwarf-Therapist/tree/master/share), and copy them into the corresponding data folder of your Dwarf Therapist installation.
+
 Linux
 =====
 In addition to the AppImage provided on the `releases`_ page, packages for specific distributions can be found at:
