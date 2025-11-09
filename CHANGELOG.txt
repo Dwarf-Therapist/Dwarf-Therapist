@@ -1,3 +1,8 @@
+### Version 42.1.21 Patch Notes
+
+***
+ - added memory layouts for 53.01 and 53.02
+
 ### Version 42.1.20 Patch Notes
 
 ***
