@@ -27,7 +27,7 @@ In the installer tab "Individual components", select these:
     - MSVC v141 - VS2017 C++ x64/x86 build Tools
 
 2.) Download Qt Creator & Libraries
-Take latest version 5, for instance at time of writing it's 5.15.2.
+Take version 5.9 or minor version above, for instance at time of writing it's 5.15.2.
 
 You can either :
 * use the [official installer](https://doc.qt.io/qt-6/get-and-install-qt.html).

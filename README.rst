@@ -31,7 +31,7 @@ Detailed building instructions can be found in `BUILDING.md`_.
 Compatibility for latest DF version:
 ====================================
 
-If the latest release is not yet available in the download page, its possible that the necessary data (memory maps) are already updated in the repository.
+If the latest release is not yet available in the download page, it's possible that the necessary data (memory maps) are already updated in the repository.
 
 To update manually you can either:
 
