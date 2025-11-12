@@ -25,6 +25,7 @@ THE SOFTWARE.
 
 #include "dwarfstats.h"
 #include "rolestats.h"
+#include "truncatingfilelogger.h"
 
 #include <QSharedPointer>
 
@@ -32,18 +33,18 @@ float DwarfStats::m_att_pot_weight;
 float DwarfStats::m_skill_rate_weight;
 int DwarfStats::m_max_unit_kills;
 
-DwarfStats DwarfStats::attributes;
-DwarfStats DwarfStats::attributes_raw;
-DwarfStats DwarfStats::skills(0);
-DwarfStats DwarfStats::facets;
-DwarfStats DwarfStats::beliefs;
-DwarfStats DwarfStats::needs;
-DwarfStats DwarfStats::preferences(0);
-DwarfStats DwarfStats::roles(-1, true);
+DwarfStats DwarfStats::attributes(use_method_t<RoleStatsStratifiedMAD>{});
+DwarfStats DwarfStats::attributes_raw(use_method_t<RoleStatsStratifiedMAD>{});
+DwarfStats DwarfStats::skills(use_method_t<RoleStatsSkewed<RoleStatsStratifiedMAD>>{}, 0);
+DwarfStats DwarfStats::facets(use_method_t<RoleStatsStratifiedMAD>{});
+DwarfStats DwarfStats::beliefs(use_method_t<RoleStatsStratifiedMAD>{});
+DwarfStats DwarfStats::needs(use_method_t<RoleStatsSkewed<RoleStatsStratifiedMAD>>{}, 0);
+DwarfStats DwarfStats::preferences(use_method_t<RoleStatsSkewed<RoleStatsRankECDF>>{}, 0);
+DwarfStats DwarfStats::roles(use_method_t<RoleStatsTransform>{});
 
-DwarfStats::DwarfStats(double invalid_value, bool override)
-    : m_invalid_value(invalid_value)
-    , m_override(override)
+template<typename T>
+DwarfStats::DwarfStats(use_method_t<T>, double invalid_value)
+    : m_stats(std::make_unique<T>(invalid_value))
 {
 }
 
@@ -71,10 +72,9 @@ double DwarfStats::calc_att_potential_value(int value, float max, float cti){
 
 void DwarfStats::init(const QVector<double> &values)
 {
-    if (!m_stats)
-        m_stats = std::make_unique<RoleStats>(values, m_invalid_value, m_override);
-    else
-        m_stats->set_list(values);
+    m_stats->set_list(values);
+    if (DT->get_log_manager()->get_appender("core")->minimum_level() <= LL_VERBOSE)
+        m_stats->log_stats(values);
 }
 
 double DwarfStats::rating(double val) const
