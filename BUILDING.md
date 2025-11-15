@@ -19,7 +19,7 @@ Windows
 
 https://visualstudio.microsoft.com/downloads/#
 
-Make sure "Development Tools for .NET" and "MSBuild" are included in the installtion options.
+Make sure "Development Tools for .NET" and "MSBuild" are included in the installation options.
 
 In the installer tab "Individual components", select these:
 
