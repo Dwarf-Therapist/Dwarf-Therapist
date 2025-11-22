@@ -13,27 +13,32 @@ For building the manual, see the README in the [Manual repository](https://githu
 Windows
 -------
 
-### Visual studio version ###
+### Visual Studio ###
 
-1.) Download Microsoft Visual Studio 
+1.) Download Microsoft Visual Studio (2022, community edition is free - VS2019 can be used as well).
 
-https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017
+https://visualstudio.microsoft.com/downloads/#
 
-Install "Tools for Visual Studio 2019" and
-select these additional options:
+Make sure "Development Tools for .NET" and "MSBuild" are included in the installation options.
+
+In the installer tab "Individual components", select these:
 
     - C++ Cmake Tools for Windows
     - MSVC v141 - VS2017 C++ x64/x86 build Tools
 
 2.) Download Qt Creator & Libraries
+Take version 5.9 or minor version above, for instance at time of writing it's 5.15.2.
 
-http://download.qt.io/official_releases/qt/5.9/5.9.7/qt-opensource-windows-x86-5.9.7.exe
-    
+You can either :
+* use the [official installer](https://doc.qt.io/qt-6/get-and-install-qt.html).
+* or use direct download links from the archive at https://download.qt.io/new_archive/qt, for instance [Qt 5.14.2 here](https://download.qt.io/new_archive/qt/5.14/5.14.2/qt-opensource-windows-x86-5.14.2.exe)
+note that in any case you'll need to create a (free) account to use the installer.
+
 Start the installer and select this option:
 
     - MSVC 2017 64-bit
     
-Note the path where you are installing this, because this will be used later. The default path is "C:\Qt\Qt5.9.7". I did install it to "E:\Qt\Qt5.9.7". So if you see this path prefix below you should change this according to your install path.
+Note the path where you are installing this, because this will be used later. The default path is "C:\Qt\Qt5.15.2". I did install it to "E:\Qt\Qt5.15.2". So if you see this path prefix below you should change this according to your install path.
     
 3.) Download git for windows
 
@@ -53,13 +58,13 @@ This will create a new directory named "Dwarf-Therapist" in the current director
     
 5.) Compile
 
-Open the "x64 Native Tools Command Prompt for VS 2019" (Visual Studio 2019 - Visual Studio Tools - VC)
+Open "x64 Native Tools Command Prompt for VS 2022" from start menu.
     
 Navigate to the DT source directory and type the commands below:
     
     mkdir build
     cd build
-    cmake -DCMAKE_PREFIX_PATH=E:/Qt/Qt5.9.7/5.9.7/msvc2017_64 -G "Visual Studio 15 2017 Win64" ..\
+    cmake -DCMAKE_PREFIX_PATH=E:/Qt/Qt5.15.2/5.15.2/msvc2017_64 -G "Visual Studio 15 2017 Win64" ..\
     MSBuild.exe DwarfTherapist.sln /p:Configuration=Release 
 
 Troubleshooting:
@@ -75,13 +80,11 @@ Now type these commands, assuming you are still in the build folder.
 
     mkdir ..\run
     copy Release\DwarfTherapist.exe ..\run
-    E:\Qt\Qt5.9.7\5.9.7\msvc2017_64\bin\windeployqt.exe ..\run
+    E:\Qt\Qt5.15.2\5.15.2\msvc2017_64\bin\windeployqt.exe ..\run
     mkdir ..\run\data
     xcopy /s ..\share\* ..\run\data
 
 The folder "run" should now contain all files needed to run DwarfTherapist.
-
-    
 
 Linux
 -----
