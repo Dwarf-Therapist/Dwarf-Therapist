@@ -35,6 +35,8 @@ It's possible that the necessary files (memory maps) are already updated in the 
 
 You can grab the memory maps files corresponding to your DF version from the [/share/data](https://github.com/Dwarf-Therapist/Dwarf-Therapist/tree/master/share) and copy them into the data/memory_layouts folder of Dwarf Therapist.
 
+To build the latest memory map files, use [dt-memory-layout tool](https://github.com/cvuchener/dt-memory-layout/tree/master).
+
 Linux
 =====
 In addition to the AppImage provided on the `releases`_ page, packages for specific distributions can be found at:
